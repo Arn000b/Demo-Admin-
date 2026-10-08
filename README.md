@@ -93,3 +93,4 @@ npm run build
 ## ⌨️ Global Shortcuts
 
 * `Ctrl + K` or `Cmd + K`: Open Global Command Search Palette.
+"# adminpanel" 
