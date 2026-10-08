@@ -1,68 +1,103 @@
 import React from 'react';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { ArrowUpRight, TrendingUp, TrendingDown } from 'lucide-react';
 import { Sparkline } from '../common/ChartComponents';
 
 export function MetricCard({
   title,
   value,
-  previousValue,
+  subtitle,
   changePercentage,
   isPositive = true,
   icon: Icon,
   sparklineData = [20, 40, 35, 50, 49, 60, 70, 91],
-  accentColor = 'brand'
+  accentColor = 'brand',
+  onClick,
+  trailing,
+  showSparkline = false
 }) {
-  return (
-    <div className="card-premium p-5 sm:p-6 relative overflow-hidden group">
-      {/* Background Subtle Gradient Glow */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-gold-100/40 via-brand-50/20 to-transparent rounded-bl-full pointer-events-none transition-opacity duration-300 group-hover:opacity-100 opacity-60" />
+  const isClickable = !!onClick;
 
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">
+  return (
+    <div
+      onClick={onClick}
+      role={isClickable ? 'button' : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      onKeyDown={isClickable ? (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick();
+        }
+      } : undefined}
+      className={`card-premium p-4 sm:p-5 relative overflow-hidden group transition-all duration-200 ${
+        isClickable ? 'cursor-pointer hover:border-brand-200 hover:shadow-card' : ''
+      }`}
+    >
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/80 to-transparent" />
+
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 block mb-2">
             {title}
           </span>
-          <h3 className="text-2xl sm:text-3xl font-extrabold text-brand-950 tracking-tight">
+          <h3 className="text-xl sm:text-2xl font-extrabold text-brand-950 tracking-tight truncate">
             {value}
           </h3>
         </div>
 
         <div
-          className={`p-3 rounded-2xl shrink-0 transition-transform duration-300 group-hover:scale-110 ${
+          className={`p-2.5 rounded-xl shrink-0 border ${
             accentColor === 'gold'
-              ? 'bg-gold-50 text-gold-800 border border-gold-200'
+              ? 'bg-gold-50 text-gold-800 border-gold-200'
               : accentColor === 'emerald'
-              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
               : accentColor === 'purple'
-              ? 'bg-purple-50 text-purple-800 border border-purple-200'
-              : 'bg-brand-50 text-brand-900 border border-brand-200'
+              ? 'bg-purple-50 text-purple-800 border-purple-200'
+              : 'bg-brand-50 text-brand-900 border-brand-200'
           }`}
         >
-          {Icon && <Icon className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2]" />}
+          {Icon && <Icon className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />}
         </div>
       </div>
 
-      <div className="flex items-end justify-between pt-1">
-        <div className="flex items-center gap-2">
-          <span
-            className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-lg ${
-              isPositive
-                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                : 'bg-rose-50 text-rose-700 border border-rose-200'
-            }`}
-          >
-            {isPositive ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
-            <span>{isPositive ? `+${changePercentage}%` : `-${changePercentage}%`}</span>
-          </span>
-          <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">vs last month</span>
+      <div className="mt-4 flex items-end justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          {changePercentage !== undefined && changePercentage !== null ? (
+            <span
+              className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-lg ${
+                isPositive
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  : 'bg-rose-50 text-rose-700 border border-rose-200'
+              }`}
+            >
+              {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+              <span>{isPositive ? `+${changePercentage}%` : `${changePercentage}%`}</span>
+            </span>
+          ) : null}
+          {subtitle ? (
+            <p className="mt-2 text-[11px] text-slate-500 font-medium truncate">{subtitle}</p>
+          ) : null}
         </div>
 
-        {/* Sparkline Visual */}
-        <Sparkline
-          data={sparklineData}
-          isPositive={isPositive}
-          color={isPositive ? '#0F3821' : '#E11D48'}
-        />
+        {showSparkline ? (
+          <div className="flex items-center gap-2 shrink-0">
+            <Sparkline
+              data={sparklineData}
+              isPositive={isPositive}
+              color={isPositive ? '#0F3821' : '#E11D48'}
+            />
+            {trailing ? (
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-800">
+                {trailing}
+                <ArrowUpRight className="w-3 h-3" />
+              </span>
+            ) : null}
+          </div>
+        ) : trailing ? (
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-800 shrink-0">
+            {trailing}
+            <ArrowUpRight className="w-3 h-3" />
+          </span>
+        ) : null}
       </div>
     </div>
   );

@@ -28,6 +28,7 @@ export function BannerEditModal() {
     image: PRESET_BANNER_IMAGES[0],
     startDate: '2026-10-01',
     endDate: '2026-10-31',
+    ctaDestinationType: 'collection',
   });
 
   useEffect(() => {
@@ -42,6 +43,7 @@ export function BannerEditModal() {
         image: editingBanner.image || PRESET_BANNER_IMAGES[0],
         startDate: editingBanner.startDate || '',
         endDate: editingBanner.endDate || '',
+        ctaDestinationType: editingBanner.ctaDestinationType || 'collection',
       });
     } else {
       setFormData({
@@ -54,6 +56,7 @@ export function BannerEditModal() {
         image: PRESET_BANNER_IMAGES[0],
         startDate: new Date().toISOString().split('T')[0],
         endDate: '2026-11-30',
+        ctaDestinationType: 'collection',
       });
     }
   }, [editingBanner, isAddBannerOpen]);
@@ -219,27 +222,78 @@ export function BannerEditModal() {
 
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Destination Link URL
+                CTA Destination
               </label>
-              <input
-                type="text"
-                value={formData.ctaLink}
-                onChange={e => setFormData({ ...formData, ctaLink: e.target.value })}
-                placeholder="/collections/festive-specials"
+              <select
+                value={formData.ctaDestinationType}
+                onChange={e => {
+                  const destinationType = e.target.value;
+                  const destinationMap = {
+                    collection: '/collections/festive',
+                    product: '/products/featured-deal',
+                    category: '/categories/bed-sheets',
+                    custom: '/campaigns/festive-offers'
+                  };
+                  setFormData({
+                    ...formData,
+                    ctaDestinationType: destinationType,
+                    ctaLink: destinationMap[destinationType] || destinationMap.collection
+                  });
+                }}
                 className="input-premium"
-              />
+              >
+                <option value="collection">Collection page</option>
+                <option value="product">Featured product</option>
+                <option value="category">Category landing page</option>
+                <option value="custom">Custom campaign URL</option>
+              </select>
             </div>
 
             <div className="sm:col-span-2">
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Image URL
+                Destination URL
               </label>
-              <input
-                type="text"
-                value={formData.image}
-                onChange={e => setFormData({ ...formData, image: e.target.value })}
-                className="input-premium text-xs"
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-2.5 text-slate-400"><LinkIcon className="w-4 h-4" /></span>
+                <input
+                  type="text"
+                  value={formData.ctaLink}
+                  onChange={e => setFormData({ ...formData, ctaLink: e.target.value, ctaDestinationType: 'custom' })}
+                  placeholder="/collections/festive-specials"
+                  className="input-premium pl-9"
+                />
+              </div>
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Media asset
+              </label>
+              <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                <div className="flex items-center gap-2 rounded-xl border border-dashed border-slate-300 bg-white px-3 py-2 text-xs text-slate-600">
+                  <ImageIcon className="w-4 h-4 text-brand-900" />
+                  Upload or paste an image URL
+                </div>
+                <input
+                  type="text"
+                  value={formData.image}
+                  onChange={e => setFormData({ ...formData, image: e.target.value })}
+                  className="input-premium text-xs"
+                  placeholder="https://images.unsplash.com/..."
+                />
+                <div className="grid grid-cols-3 gap-2">
+                  {PRESET_BANNER_IMAGES.map((image, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, image })}
+                      className={`overflow-hidden rounded-xl border-2 ${formData.image === image ? 'border-brand-900 ring-2 ring-gold-400' : 'border-slate-200'} `}
+                    >
+                      <img src={image} alt={`Banner preset ${index + 1}`} className="h-16 w-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 

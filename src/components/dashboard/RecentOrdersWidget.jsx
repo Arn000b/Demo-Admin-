@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, Eye, FileText, ChevronRight, ArrowUpRight } from 'lucide-react';
+import { ShoppingBag, Eye, FileText, ArrowRight } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { OrderStatusBadge } from '../common/Badge';
 import { formatCurrency, formatDate } from '../../utils/formatters';
@@ -9,8 +9,7 @@ export function RecentOrdersWidget() {
     orders,
     setSelectedOrderForDetail,
     setSelectedOrderForInvoice,
-    setActiveTab,
-    updateOrderStatus
+    setActiveTab
   } = useStore();
 
   const recentOrders = orders.slice(0, 5);
@@ -23,17 +22,17 @@ export function RecentOrdersWidget() {
             <ShoppingBag className="w-4 h-4" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-slate-900">Recent Customer Orders</h4>
-            <p className="text-xs text-slate-500">Live order stream and fulfillment statuses</p>
+            <h4 className="text-sm font-bold text-slate-900">Recent Orders</h4>
+            <p className="text-xs text-slate-500">Latest orders and fulfillment status</p>
           </div>
         </div>
 
         <button
           onClick={() => setActiveTab('orders')}
-          className="text-xs font-semibold text-brand-800 hover:text-brand-950 flex items-center gap-1 hover:underline"
+          className="text-xs font-semibold text-brand-800 hover:text-brand-950 flex items-center gap-1.5 transition-colors"
         >
-          <span>View All ({orders.length})</span>
-          <ArrowUpRight className="w-3.5 h-3.5" />
+          <span>View all orders</span>
+          <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
 
@@ -41,7 +40,7 @@ export function RecentOrdersWidget() {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
-              <th className="py-3 px-2">Order ID</th>
+              <th className="py-3 px-2">Order</th>
               <th className="py-3 px-2">Customer</th>
               <th className="py-3 px-2">Items</th>
               <th className="py-3 px-2">Total</th>
@@ -83,14 +82,14 @@ export function RecentOrdersWidget() {
                     <button
                       onClick={() => setSelectedOrderForDetail(order)}
                       className="p-1.5 rounded-lg text-slate-500 hover:text-brand-900 hover:bg-brand-50 transition-colors"
-                      title="View Order Details"
+                      title="View order details"
                     >
                       <Eye className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => setSelectedOrderForInvoice(order)}
                       className="p-1.5 rounded-lg text-slate-500 hover:text-gold-700 hover:bg-gold-50 transition-colors"
-                      title="Print Invoice"
+                      title="Print invoice"
                     >
                       <FileText className="w-3.5 h-3.5" />
                     </button>

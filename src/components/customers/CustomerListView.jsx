@@ -339,7 +339,7 @@ export function CustomerListView() {
             </div>
 
             <div className="space-y-2 text-xs text-slate-600 bg-slate-50 p-4 rounded-2xl">
-              <p><strong>Preferred Shopping Category:</strong> {selectedCustomer.favoriteCategory || 'Bed Sheets & Lifestyle'}</p>
+              <p><strong>Preferred Shopping Category:</strong> {selectedCustomer.favoriteCategory || 'Bed Sheets'}</p>
               <p><strong>Primary Address:</strong> {selectedCustomer.city}, Bangladesh</p>
               <p><strong>Registration Date:</strong> {formatDate(selectedCustomer.joinedDate, 'long')}</p>
             </div>

@@ -112,32 +112,41 @@ export function OrderListView() {
 
       {/* Summary Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="card-premium p-4 flex items-center gap-3.5">
+        <div 
+          className="card-premium p-4 flex items-center gap-3.5 cursor-pointer hover:border-slate-300 transition-colors"
+          onClick={() => setSelectedStatusTab('Pending')}
+        >
           <div className="p-3 rounded-2xl bg-gold-100/70 text-gold-900">
             <Clock className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[11px] font-semibold text-slate-400 uppercase">Pending Review</span>
+            <span className="text-[11px] font-semibold text-slate-400 uppercase">Pending</span>
             <h4 className="text-xl font-extrabold text-slate-900">{pendingCount} orders</h4>
           </div>
         </div>
 
-        <div className="card-premium p-4 flex items-center gap-3.5">
+        <div 
+          className="card-premium p-4 flex items-center gap-3.5 cursor-pointer hover:border-slate-300 transition-colors"
+          onClick={() => setSelectedStatusTab('Processing')}
+        >
           <div className="p-3 rounded-2xl bg-blue-100 text-blue-800">
             <Truck className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[11px] font-semibold text-slate-400 uppercase">In Processing / Transit</span>
+            <span className="text-[11px] font-semibold text-slate-400 uppercase">Processing</span>
             <h4 className="text-xl font-extrabold text-slate-900">{processingCount} orders</h4>
           </div>
         </div>
 
-        <div className="card-premium p-4 flex items-center gap-3.5">
+        <div 
+          className="card-premium p-4 flex items-center gap-3.5 cursor-pointer hover:border-slate-300 transition-colors"
+          onClick={() => setSelectedStatusTab('Delivered')}
+        >
           <div className="p-3 rounded-2xl bg-emerald-100 text-emerald-800">
             <CheckCircle className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[11px] font-semibold text-slate-400 uppercase">Successfully Delivered</span>
+            <span className="text-[11px] font-semibold text-slate-400 uppercase">Delivered</span>
             <h4 className="text-xl font-extrabold text-slate-900">{deliveredCount} orders</h4>
           </div>
         </div>
@@ -224,13 +233,13 @@ export function OrderListView() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="text-[11px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
-                <th className="py-3.5 px-4">Order ID & Date</th>
+                <th className="py-3.5 px-4">Order</th>
                 <th className="py-3.5 px-4">Customer</th>
-                <th className="py-3.5 px-4">Purchased Items</th>
-                <th className="py-3.5 px-4">Total Amount</th>
+                <th className="py-3.5 px-4">Items</th>
+                <th className="py-3.5 px-4">Total</th>
                 <th className="py-3.5 px-4">Payment</th>
-                <th className="py-3.5 px-4">Status & Action</th>
-                <th className="py-3.5 px-4 text-right">Quick Invoice</th>
+                <th className="py-3.5 px-4">Status</th>
+                <th className="py-3.5 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
@@ -244,12 +253,12 @@ export function OrderListView() {
               ) : (
                 filteredOrders.map(order => (
                   <tr key={order.id} className="hover:bg-slate-50/70 transition-colors group">
-                    <td className="py-3.5 px-4">
-                      <span className="font-mono font-bold text-brand-950 block">{order.id}</span>
+                    <td className="py-3.5 px-4 cursor-pointer" onClick={() => setSelectedOrderForDetail(order)}>
+                      <span className="font-mono font-bold text-brand-950 block hover:text-brand-700">{order.id}</span>
                       <span className="text-[11px] text-slate-400">{formatDate(order.date)}</span>
                     </td>
 
-                    <td className="py-3.5 px-4">
+                    <td className="py-3.5 px-4 cursor-pointer" onClick={() => setSelectedOrderForDetail(order)}>
                       <div className="flex items-center gap-2.5">
                         <img
                           src={order.customer.avatar}
@@ -263,7 +272,7 @@ export function OrderListView() {
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4">
+                    <td className="py-3.5 px-4 cursor-pointer" onClick={() => setSelectedOrderForDetail(order)}>
                       <div className="flex items-center gap-1.5">
                         <div className="flex -space-x-2 overflow-hidden">
                           {order.items.slice(0, 3).map((item, idx) => (
@@ -282,7 +291,7 @@ export function OrderListView() {
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4">
+                    <td className="py-3.5 px-4 cursor-pointer" onClick={() => setSelectedOrderForDetail(order)}>
                       <span className="font-extrabold text-brand-950 text-sm block">
                         {formatCurrency(order.total)}
                       </span>
@@ -293,7 +302,7 @@ export function OrderListView() {
                       )}
                     </td>
 
-                    <td className="py-3.5 px-4">
+                    <td className="py-3.5 px-4 cursor-pointer" onClick={() => setSelectedOrderForDetail(order)}>
                       <p className="font-semibold text-slate-800">{order.paymentMethod}</p>
                       <span className={`inline-block text-[10px] font-bold px-1.5 py-0.2 rounded mt-0.5 ${
                         order.paymentStatus === 'Paid'
@@ -307,34 +316,32 @@ export function OrderListView() {
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-2">
-                        <select
-                          value={order.orderStatus}
-                          onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                          className="bg-white border border-slate-200 text-slate-800 font-bold rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-brand-700/20 focus:outline-none cursor-pointer"
-                        >
-                          <option value="Pending">Pending</option>
-                          <option value="Processing">Processing</option>
-                          <option value="Shipped">Shipped</option>
-                          <option value="Delivered">Delivered</option>
-                          <option value="Cancelled">Cancelled</option>
-                        </select>
-                      </div>
+                      <select
+                        value={order.orderStatus}
+                        onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                        className="bg-white border border-slate-200 text-slate-800 font-bold rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-brand-700/20 focus:outline-none cursor-pointer"
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Cancelled">Cancelled</option>
+                      </select>
                     </td>
 
                     <td className="py-3.5 px-4 text-right">
-                      <div className="inline-flex items-center gap-1.5">
+                      <div className="inline-flex items-center gap-1.5 opacity-90 group-hover:opacity-100">
                         <button
                           onClick={() => setSelectedOrderForDetail(order)}
-                          className="p-1.5 rounded-lg text-slate-600 hover:text-brand-900 hover:bg-brand-50 transition-colors"
-                          title="View Order Breakdown"
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-brand-900 hover:bg-brand-50 transition-colors"
+                          title="View Order"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setSelectedOrderForInvoice(order)}
-                          className="p-1.5 rounded-lg text-slate-600 hover:text-gold-700 hover:bg-gold-50 transition-colors"
-                          title="Print Commercial Invoice"
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-gold-700 hover:bg-gold-50 transition-colors"
+                          title="View Invoice"
                         >
                           <FileText className="w-4 h-4" />
                         </button>

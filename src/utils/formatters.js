@@ -1,8 +1,24 @@
 // Formatting and helper utilities
 
 export function formatCurrency(amount, symbol = '৳') {
-  if (amount === undefined || amount === null || isNaN(amount)) return `${symbol}0`;
-  return `${symbol}${Number(amount).toLocaleString('en-US')}`;
+  if (amount === undefined || amount === null || Number.isNaN(Number(amount))) return `${symbol}0`;
+  return `${symbol}${Number(amount).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+}
+
+export function formatCompactCurrency(amount, symbol = '৳') {
+  if (amount === undefined || amount === null || Number.isNaN(Number(amount))) return `${symbol}0`;
+
+  const numericAmount = Number(amount);
+
+  if (numericAmount >= 1000000) {
+    return `${symbol}${(numericAmount / 1000000).toLocaleString('en-US', { maximumFractionDigits: 1 })}M`;
+  }
+
+  if (numericAmount >= 1000) {
+    return `${symbol}${(numericAmount / 1000).toLocaleString('en-US', { maximumFractionDigits: 1 })}K`;
+  }
+
+  return formatCurrency(numericAmount, symbol);
 }
 
 export function formatDate(dateString, format = 'short') {
@@ -59,21 +75,16 @@ export function getOrderStatusStyle(status) {
         label: 'Delivered'
       };
     case 'processing':
+    case 'shipped':
       return {
         bg: 'bg-blue-50 text-blue-700 border-blue-200',
         dot: 'bg-blue-500',
-        label: 'Processing'
-      };
-    case 'shipped':
-      return {
-        bg: 'bg-amber-50 text-amber-700 border-amber-200',
-        dot: 'bg-amber-500',
-        label: 'Shipped'
+        label: status.charAt(0).toUpperCase() + status.slice(1)
       };
     case 'pending':
       return {
-        bg: 'bg-gold-100 text-gold-900 border-gold-300',
-        dot: 'bg-gold-600',
+        bg: 'bg-amber-50 text-amber-700 border-amber-200',
+        dot: 'bg-amber-500',
         label: 'Pending'
       };
     case 'cancelled':
@@ -81,7 +92,7 @@ export function getOrderStatusStyle(status) {
       return {
         bg: 'bg-rose-50 text-rose-700 border-rose-200',
         dot: 'bg-rose-500',
-        label: status
+        label: status.charAt(0).toUpperCase() + status.slice(1)
       };
     default:
       return {

@@ -11,6 +11,13 @@ import {
 
 const StoreContext = createContext();
 
+const DEFAULT_PROFILE = {
+  name: 'Anonna Rahman',
+  email: 'anonna@anonnamart.com',
+  role: 'Executive Admin',
+  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
+};
+
 export function StoreProvider({ children }) {
   // Navigation & Modals State
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -54,6 +61,11 @@ export function StoreProvider({ children }) {
     return saved ? JSON.parse(saved) : STORE_SETTINGS;
   });
 
+  const [profile, setProfile] = useState(() => {
+    const saved = localStorage.getItem('anonna_profile');
+    return saved ? JSON.parse(saved) : DEFAULT_PROFILE;
+  });
+
   // Modal State
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -63,6 +75,7 @@ export function StoreProvider({ children }) {
   const [isAddBannerOpen, setIsAddBannerOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState(null);
   const [isAddCouponOpen, setIsAddCouponOpen] = useState(false);
+  const [isProfileEditOpen, setIsProfileEditOpen] = useState(false);
 
   // Notifications State
   const [notifications, setNotifications] = useState([
@@ -135,6 +148,10 @@ export function StoreProvider({ children }) {
   useEffect(() => {
     localStorage.setItem('anonna_settings', JSON.stringify(settings));
   }, [settings]);
+
+  useEffect(() => {
+    localStorage.setItem('anonna_profile', JSON.stringify(profile));
+  }, [profile]);
 
   // Product Actions
   const addProduct = (newProd) => {
@@ -285,6 +302,11 @@ export function StoreProvider({ children }) {
     showToast('Settings Saved', 'Store configuration updated successfully.');
   };
 
+  const updateProfile = (updates) => {
+    setProfile(prev => ({ ...prev, ...updates }));
+    showToast('Profile Updated', 'Your account details were saved successfully.');
+  };
+
   return (
     <StoreContext.Provider
       value={{
@@ -323,6 +345,8 @@ export function StoreProvider({ children }) {
 
         settings,
         updateSettings,
+        profile,
+        updateProfile,
 
         // Modals & Drawers
         isAddProductOpen,
@@ -341,6 +365,8 @@ export function StoreProvider({ children }) {
         setEditingBanner,
         isAddCouponOpen,
         setIsAddCouponOpen,
+        isProfileEditOpen,
+        setIsProfileEditOpen,
 
         // Notifications & Toasts
         notifications,

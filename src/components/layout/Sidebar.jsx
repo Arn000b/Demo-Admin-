@@ -7,11 +7,7 @@ import {
   Megaphone,
   BarChart3,
   Settings,
-  Store,
-  Sparkles,
-  ChevronRight,
-  ExternalLink,
-  ShieldCheck
+  X,
 } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 
@@ -21,51 +17,43 @@ export function Sidebar({ isOpen, onClose }) {
   const pendingOrdersCount = orders.filter(o => o.orderStatus === 'Pending' || o.orderStatus === 'Processing').length;
   const lowStockCount = products.filter(p => p.stock <= (p.minStockAlert || 5)).length;
 
-  const navItems = [
+  const navGroups = [
     {
-      id: 'dashboard',
-      label: 'Dashboard',
-      icon: LayoutDashboard,
-      badge: null
+      title: 'Main',
+      items: [
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null }
+      ]
     },
     {
-      id: 'products',
-      label: 'Product Catalog',
-      icon: Package,
-      badge: lowStockCount > 0 ? `${lowStockCount} Alert` : `${products.length}`,
-      badgeType: lowStockCount > 0 ? 'warning' : 'neutral'
+      title: 'Sales',
+      items: [
+        { id: 'orders', label: 'Orders', icon: ShoppingBag, badge: pendingOrdersCount > 0 ? `${pendingOrdersCount} New` : null, badgeType: 'warning' },
+        { id: 'customers', label: 'Customers', icon: Users, badge: null }
+      ]
     },
     {
-      id: 'orders',
-      label: 'Orders Management',
-      icon: ShoppingBag,
-      badge: pendingOrdersCount > 0 ? `${pendingOrdersCount} New` : null,
-      badgeType: 'accent'
+      title: 'Catalog',
+      items: [
+        { id: 'products', label: 'Products', icon: Package, badge: lowStockCount > 0 ? `${lowStockCount} Low` : null, badgeType: 'warning' }
+      ]
     },
     {
-      id: 'customers',
-      label: 'Customers & Vendors',
-      icon: Users,
-      badge: null
+      title: 'Marketing',
+      items: [
+        { id: 'marketing', label: 'Marketing', icon: Megaphone, badge: null }
+      ]
     },
     {
-      id: 'marketing',
-      label: 'Marketing & Banners',
-      icon: Megaphone,
-      badge: 'Promo',
-      badgeType: 'gold'
+      title: 'Analytics',
+      items: [
+        { id: 'analytics', label: 'Analytics', icon: BarChart3, badge: null }
+      ]
     },
     {
-      id: 'analytics',
-      label: 'Analytics & Insights',
-      icon: BarChart3,
-      badge: null
-    },
-    {
-      id: 'settings',
-      label: 'Store Settings',
-      icon: Settings,
-      badge: null
+      title: 'System',
+      items: [
+        { id: 'settings', label: 'Store Settings', icon: Settings, badge: null }
+      ]
     }
   ];
 
@@ -79,23 +67,23 @@ export function Sidebar({ isOpen, onClose }) {
       {/* Mobile Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-brand-950/70 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-brand-950/70 backdrop-blur-sm xl:hidden"
           onClick={onClose}
         />
       )}
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 w-72 bg-brand-950 text-white flex flex-col border-r border-brand-900/60 shadow-2xl transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-brand-900/60 bg-brand-950 text-white shadow-2xl transition-transform duration-300 ease-in-out xl:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Brand Header */}
-        <div className="p-6 pb-5 border-b border-white/10 flex items-center justify-between">
+        <div className="flex shrink-0 items-center justify-between border-b border-white/10 px-4 py-3.5">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-gold-400 to-gold-600 p-0.5 shadow-gold-glow shrink-0">
-              <div className="w-full h-full bg-brand-950 rounded-[14px] flex items-center justify-center">
-                <span className="font-serif font-black text-xl text-gold-300">A</span>
+            <div className="h-9 w-9 shrink-0 rounded-xl bg-gradient-to-br from-gold-400 to-gold-600 p-0.5 shadow-gold-glow">
+              <div className="flex h-full w-full items-center justify-center rounded-[10px] bg-brand-950">
+                <span className="font-serif text-lg font-black text-gold-300">A</span>
               </div>
             </div>
             <div>
@@ -109,103 +97,73 @@ export function Sidebar({ isOpen, onClose }) {
               </p>
             </div>
           </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-300 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 xl:hidden"
+            aria-label="Close navigation menu"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
-        {/* Store Live Status Banner */}
-        <div className="px-5 pt-4">
-          <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-brand-900/60 border border-brand-800/80 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span className="text-slate-200 font-medium text-[11px]">Live Storefront</span>
-            </div>
-            <a
-              href="#"
-              onClick={(e) => { e.preventDefault(); window.open('https://anonnamart.com', '_blank'); }}
-              className="text-gold-400 hover:text-gold-300 flex items-center gap-1 font-semibold text-[11px] hover:underline"
-            >
-              <span>Visit</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          </div>
-        </div>
 
-        {/* Navigation Section */}
-        <div className="flex-1 px-4 py-4 overflow-y-auto space-y-1.5">
-          <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-            Main Management
-          </p>
+        {/* Navigation */}
+        <nav aria-label="Main navigation" className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-3">
+          {navGroups.map((group, groupIdx) => (
+            <div key={groupIdx} className="space-y-0.5">
+              <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400/90">
+                {group.title}
+              </p>
 
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
 
-            return (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group ${
-                  isActive
-                    ? 'bg-gradient-to-r from-brand-900 to-brand-800 text-white shadow-lg border-l-4 border-gold-400'
-                    : 'text-slate-300 hover:bg-white/5 hover:text-white'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`p-1.5 rounded-lg transition-colors ${
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleNavClick(item.id)}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={`group flex min-h-10 w-full items-center justify-between rounded-xl px-3 py-2 font-medium text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
                       isActive
-                        ? 'bg-gold-400 text-brand-950 font-bold'
-                        : 'text-slate-400 group-hover:text-gold-300'
+                        ? 'bg-white/10 text-white ring-1 ring-inset ring-white/10'
+                        : 'text-slate-300 hover:bg-white/5 hover:text-white'
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <span className={`text-sm ${isActive ? 'font-semibold text-white' : ''}`}>
-                    {item.label}
-                  </span>
-                </div>
+                    <div className="flex items-center gap-3">
+                      <Icon className={`h-[18px] w-[18px] shrink-0 ${isActive ? 'text-gold-300' : 'text-slate-400 group-hover:text-gold-300'}`} />
+                      <span className={isActive ? 'font-semibold text-white' : ''}>
+                        {item.label}
+                      </span>
+                    </div>
 
-                {item.badge && (
-                  <span
-                    className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                      item.badgeType === 'warning'
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                        : item.badgeType === 'accent'
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                        : item.badgeType === 'gold'
-                        ? 'bg-gold-400/20 text-gold-300 border border-gold-400/30'
-                        : 'bg-white/10 text-slate-300'
-                    }`}
-                  >
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+                    {item.badge && (
+                      <span
+                        className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                          item.badgeType === 'warning'
+                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                            : item.badgeType === 'accent'
+                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                            : item.badgeType === 'gold'
+                            ? 'bg-gold-400/20 text-gold-300 border border-gold-400/30'
+                            : 'bg-white/10 text-slate-300'
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </nav>
 
-        {/* Footer Admin Card */}
-        <div className="p-4 border-t border-white/10 bg-brand-950/90">
-          <div className="p-3.5 rounded-2xl bg-gradient-to-b from-brand-900/80 to-brand-900/40 border border-brand-800/80">
-            <div className="flex items-center gap-2.5 mb-2">
-              <div className="p-1.5 rounded-lg bg-gold-400/20 text-gold-400">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white">Anonna Mart Pro</p>
-                <p className="text-[10px] text-emerald-300/80">Fast SSL • Dhaka CDN</p>
-              </div>
-            </div>
-            <div className="w-full bg-brand-950 rounded-full h-1.5 overflow-hidden">
-              <div className="bg-gradient-to-r from-gold-400 to-emerald-400 h-full w-4/5 rounded-full"></div>
-            </div>
-            <div className="flex justify-between items-center text-[10px] text-slate-300 mt-2 font-medium">
-              <span>DB Sync: Active</span>
-              <span className="text-gold-300 font-bold">100% Health</span>
-            </div>
+        <div className="shrink-0 border-t border-white/10 px-4 py-2.5">
+          <div className="flex items-center gap-2 text-[11px] font-medium text-slate-400">
+            <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
+            <span>All systems operational</span>
           </div>
         </div>
       </aside>

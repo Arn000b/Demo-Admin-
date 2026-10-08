@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCompactCurrency, formatCurrency } from '../../utils/formatters';
 
 export function Sparkline({ data = [30, 45, 38, 62, 55, 78, 85], isPositive = true, color = '#10B981' }) {
   const min = Math.min(...data);
@@ -257,10 +257,10 @@ export function CategoryDonutChart({ categories = [] }) {
   const [hoveredSlice, setHoveredSlice] = useState(null);
 
   const defaultCategories = [
-    { name: 'Bed Sheets & Linen', amount: 168400, percentage: 32, color: '#0F3821' },
-    { name: "Women's Fashion & Silk", amount: 142000, percentage: 27, color: '#D4AF37' },
-    { name: 'Organic Food & Agro', amount: 126300, percentage: 24, color: '#2D8050' },
-    { name: 'Home Decor & Crafts', amount: 89400, percentage: 17, color: '#64748B' }
+    { name: 'Bed Sheets', amount: 168400, percentage: 32, color: '#0F3821' },
+    { name: "Women's Fashion", amount: 142000, percentage: 27, color: '#D4AF37' },
+    { name: 'Organic Food', amount: 126300, percentage: 24, color: '#2D8050' },
+    { name: 'Home Decor', amount: 89400, percentage: 17, color: '#64748B' }
   ];
 
   const data = categories.length ? categories : defaultCategories;
@@ -272,7 +272,7 @@ export function CategoryDonutChart({ categories = [] }) {
   let accumulatedPercent = 0;
 
   return (
-    <div className="flex flex-col sm:flex-row items-center gap-6 justify-between">
+    <div className="flex min-w-0 flex-col items-center gap-5">
       {/* Donut SVG */}
       <div className="relative w-44 h-44 shrink-0">
         <svg viewBox="0 0 180 180" className="w-full h-full -rotate-90">
@@ -304,33 +304,33 @@ export function CategoryDonutChart({ categories = [] }) {
         {/* Center Label */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
           <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">
-            {hoveredSlice !== null ? data[hoveredSlice].name.split(' ')[0] : 'Total Sales'}
+            {hoveredSlice !== null ? 'Category' : 'Total Sales'}
           </span>
           <span className="text-base font-extrabold text-brand-950">
             {hoveredSlice !== null ? formatCurrency(data[hoveredSlice].amount) : formatCurrency(total)}
           </span>
           <span className="text-[10px] font-semibold text-emerald-600">
-            {hoveredSlice !== null ? `${data[hoveredSlice].percentage}% Share` : '100% Volume'}
+            {hoveredSlice !== null ? `${data[hoveredSlice].percentage}% of total` : '100% of sales'}
           </span>
         </div>
       </div>
 
       {/* Legend & Stats */}
-      <div className="flex-1 w-full space-y-2.5">
+      <div className="w-full min-w-0 space-y-2.5">
         {data.map((cat, idx) => (
           <div
             key={idx}
             onMouseEnter={() => setHoveredSlice(idx)}
             onMouseLeave={() => setHoveredSlice(null)}
-            className={`flex items-center justify-between p-2 rounded-xl transition-all cursor-pointer ${
+            className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 p-2 rounded-xl transition-all cursor-pointer ${
               hoveredSlice === idx ? 'bg-brand-50/80 shadow-sm border border-brand-100' : 'hover:bg-slate-50'
             }`}
           >
-            <div className="flex items-center gap-2.5">
+            <div className="flex min-w-0 items-center gap-2.5">
               <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: cat.color }}></span>
-              <span className="text-xs font-semibold text-slate-700">{cat.name}</span>
+              <span className="min-w-0 break-words text-xs font-semibold leading-tight text-slate-700">{cat.name}</span>
             </div>
-            <div className="text-right">
+            <div className="shrink-0 whitespace-nowrap text-right">
               <span className="text-xs font-bold text-slate-900">{formatCurrency(cat.amount)}</span>
               <span className="text-[11px] text-slate-400 ml-1.5 font-medium">({cat.percentage}%)</span>
             </div>

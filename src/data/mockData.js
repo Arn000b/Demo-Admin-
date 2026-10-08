@@ -457,7 +457,7 @@ export const INITIAL_CUSTOMERS = [
     status: 'VIP Member',
     joinedDate: '2025-06-12',
     lastOrderDate: '2026-10-08',
-    favoriteCategory: 'Bed Sheets & Textiles'
+    favoriteCategory: 'Bed Sheets'
   },
   {
     id: 'CUST-002',
@@ -471,7 +471,7 @@ export const INITIAL_CUSTOMERS = [
     status: 'VIP Member',
     joinedDate: '2025-04-19',
     lastOrderDate: '2026-10-07',
-    favoriteCategory: "Women's Fashion & Silk"
+    favoriteCategory: "Women's Fashion"
   },
   {
     id: 'CUST-003',
@@ -485,7 +485,7 @@ export const INITIAL_CUSTOMERS = [
     status: 'Active',
     joinedDate: '2025-09-03',
     lastOrderDate: '2026-10-07',
-    favoriteCategory: 'Organic Food & Agro'
+    favoriteCategory: 'Organic Food'
   },
   {
     id: 'CUST-004',
@@ -538,7 +538,7 @@ export const INITIAL_VENDORS = [
     contactPerson: 'Rafiqul Islam',
     email: 'supply@sundarbanagro.bd',
     phone: '+880 1714-556677',
-    category: 'Organic Food & Honey',
+    category: 'Organic Food',
     totalSupplied: 1240,
     fulfillmentRate: '98.5%',
     rating: 4.9,
@@ -562,7 +562,7 @@ export const INITIAL_VENDORS = [
     contactPerson: 'Kamrul Ahsan',
     email: 'orders@royalheritagetextiles.com',
     phone: '+880 1911-889900',
-    category: 'Bed Sheets & Cotton Linens',
+    category: 'Bed Sheets',
     totalSupplied: 2450,
     fulfillmentRate: '99.1%',
     rating: 5.0,
@@ -574,7 +574,7 @@ export const INITIAL_VENDORS = [
     contactPerson: 'Shyamal Roy',
     email: 'sales@artisanbrassbd.com',
     phone: '+880 1678-112233',
-    category: 'Home Decor & Lighting',
+    category: 'Home Decor',
     totalSupplied: 430,
     fulfillmentRate: '94.0%',
     rating: 4.6,

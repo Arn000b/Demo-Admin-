@@ -43,6 +43,7 @@ export function AddProductModal() {
   } = useStore();
 
   const [activeStep, setActiveStep] = useState(1);
+  const [validationErrors, setValidationErrors] = useState({});
   const [formData, setFormData] = useState({
     name: '',
     category: 'Bed Sheets',
@@ -134,8 +135,48 @@ export function AddProductModal() {
     return 0;
   };
 
+  const validateStep = (step) => {
+    const nextErrors = {};
+
+    if (step === 1) {
+      if (!formData.name?.trim()) nextErrors.name = 'Product name is required.';
+      if (!formData.category?.trim()) nextErrors.category = 'Category is required.';
+      if (!formData.tags?.trim()) nextErrors.tags = 'Add at least one tag.';
+    }
+
+    if (step === 2) {
+      if (!formData.price || Number(formData.price) <= 0) nextErrors.price = 'Selling price must be greater than 0.';
+      if (!formData.originalPrice || Number(formData.originalPrice) <= 0) nextErrors.originalPrice = 'Original price is required.';
+      if (!formData.costPrice || Number(formData.costPrice) <= 0) nextErrors.costPrice = 'Cost price is required.';
+    }
+
+    if (step === 3) {
+      if (!formData.sku?.trim()) nextErrors.sku = 'SKU is required.';
+      if (!formData.stock || Number(formData.stock) < 0) nextErrors.stock = 'Stock count must be 0 or more.';
+    }
+
+    if (step === 4 && !formData.image?.trim()) nextErrors.image = 'Choose a product image.';
+
+    setValidationErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const goToStep = (step) => {
+    if (step <= activeStep || validateStep(activeStep)) {
+      setActiveStep(step);
+      setValidationErrors({});
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const stepValidation = [1, 2, 3, 4].every(validateStep);
+    if (!stepValidation) {
+      setActiveStep(1);
+      return;
+    }
+
     const tagArray = typeof formData.tags === 'string'
       ? formData.tags.split(',').map(t => t.trim()).filter(Boolean)
       : formData.tags;
@@ -203,7 +244,8 @@ export function AddProductModal() {
           ].map(s => (
             <button
               key={s.step}
-              onClick={() => setActiveStep(s.step)}
+              type="button"
+              onClick={() => goToStep(s.step)}
               className={`flex items-center gap-1.5 py-1.5 px-3 rounded-xl transition-all ${
                 activeStep === s.step
                   ? 'bg-brand-900 text-white shadow-xs'
@@ -231,10 +273,14 @@ export function AddProductModal() {
                   type="text"
                   required
                   value={formData.name}
-                  onChange={e => setFormData({ ...formData, name: e.target.value })}
+                  onChange={e => {
+                    setFormData({ ...formData, name: e.target.value });
+                    if (validationErrors.name) setValidationErrors(prev => ({ ...prev, name: '' }));
+                  }}
                   placeholder="e.g., Luxury Egyptian Cotton 400TC King Bed Sheet Set"
-                  className="input-premium font-medium"
+                  className={`input-premium font-medium ${validationErrors.name ? 'border-rose-300 focus:border-rose-500' : ''}`}
                 />
+                {validationErrors.name && <p className="mt-1 text-[11px] font-medium text-rose-600">{validationErrors.name}</p>}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -244,13 +290,17 @@ export function AddProductModal() {
                   </label>
                   <select
                     value={formData.category}
-                    onChange={e => setFormData({ ...formData, category: e.target.value })}
-                    className="input-premium font-medium"
+                    onChange={e => {
+                      setFormData({ ...formData, category: e.target.value });
+                      if (validationErrors.category) setValidationErrors(prev => ({ ...prev, category: '' }));
+                    }}
+                    className={`input-premium font-medium ${validationErrors.category ? 'border-rose-300 focus:border-rose-500' : ''}`}
                   >
                     {CATEGORIES.map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
+                  {validationErrors.category && <p className="mt-1 text-[11px] font-medium text-rose-600">{validationErrors.category}</p>}
                 </div>
 
                 <div>
@@ -260,10 +310,14 @@ export function AddProductModal() {
                   <input
                     type="text"
                     value={formData.tags}
-                    onChange={e => setFormData({ ...formData, tags: e.target.value })}
+                    onChange={e => {
+                      setFormData({ ...formData, tags: e.target.value });
+                      if (validationErrors.tags) setValidationErrors(prev => ({ ...prev, tags: '' }));
+                    }}
                     placeholder="e.g. Best Seller, Pure Honey, Handloom (comma separated)"
-                    className="input-premium"
+                    className={`input-premium ${validationErrors.tags ? 'border-rose-300 focus:border-rose-500' : ''}`}
                   />
+                  {validationErrors.tags && <p className="mt-1 text-[11px] font-medium text-rose-600">{validationErrors.tags}</p>}
                 </div>
               </div>
 
@@ -309,11 +363,15 @@ export function AddProductModal() {
                       type="number"
                       required
                       value={formData.originalPrice}
-                      onChange={e => setFormData({ ...formData, originalPrice: e.target.value })}
+                      onChange={e => {
+                        setFormData({ ...formData, originalPrice: e.target.value });
+                        if (validationErrors.originalPrice) setValidationErrors(prev => ({ ...prev, originalPrice: '' }));
+                      }}
                       placeholder="4500"
-                      className="input-premium pl-8 font-semibold"
+                      className={`input-premium pl-8 font-semibold ${validationErrors.originalPrice ? 'border-rose-300 focus:border-rose-500' : ''}`}
                     />
                   </div>
+                  {validationErrors.originalPrice && <p className="mt-1 text-[11px] font-medium text-rose-600">{validationErrors.originalPrice}</p>}
                 </div>
 
                 <div>
@@ -326,11 +384,15 @@ export function AddProductModal() {
                       type="number"
                       required
                       value={formData.price}
-                      onChange={e => setFormData({ ...formData, price: e.target.value })}
+                      onChange={e => {
+                        setFormData({ ...formData, price: e.target.value });
+                        if (validationErrors.price) setValidationErrors(prev => ({ ...prev, price: '' }));
+                      }}
                       placeholder="3850"
-                      className="input-premium pl-8 font-bold text-brand-900"
+                      className={`input-premium pl-8 font-bold text-brand-900 ${validationErrors.price ? 'border-rose-300 focus:border-rose-500' : ''}`}
                     />
                   </div>
+                  {validationErrors.price && <p className="mt-1 text-[11px] font-medium text-rose-600">{validationErrors.price}</p>}
                 </div>
 
                 <div>
@@ -342,11 +404,15 @@ export function AddProductModal() {
                     <input
                       type="number"
                       value={formData.costPrice}
-                      onChange={e => setFormData({ ...formData, costPrice: e.target.value })}
+                      onChange={e => {
+                        setFormData({ ...formData, costPrice: e.target.value });
+                        if (validationErrors.costPrice) setValidationErrors(prev => ({ ...prev, costPrice: '' }));
+                      }}
                       placeholder="2200"
-                      className="input-premium pl-8"
+                      className={`input-premium pl-8 ${validationErrors.costPrice ? 'border-rose-300 focus:border-rose-500' : ''}`}
                     />
                   </div>
+                  {validationErrors.costPrice && <p className="mt-1 text-[11px] font-medium text-rose-600">{validationErrors.costPrice}</p>}
                 </div>
               </div>
 
@@ -396,10 +462,14 @@ export function AddProductModal() {
                     type="text"
                     required
                     value={formData.sku}
-                    onChange={e => setFormData({ ...formData, sku: e.target.value })}
+                    onChange={e => {
+                      setFormData({ ...formData, sku: e.target.value });
+                      if (validationErrors.sku) setValidationErrors(prev => ({ ...prev, sku: '' }));
+                    }}
                     placeholder="BED-EGY-400-K"
-                    className="input-premium font-mono font-bold"
+                    className={`input-premium font-mono font-bold ${validationErrors.sku ? 'border-rose-300 focus:border-rose-500' : ''}`}
                   />
+                  {validationErrors.sku && <p className="mt-1 text-[11px] font-medium text-rose-600">{validationErrors.sku}</p>}
                 </div>
 
                 <div>
@@ -410,10 +480,14 @@ export function AddProductModal() {
                     type="number"
                     required
                     value={formData.stock}
-                    onChange={e => setFormData({ ...formData, stock: e.target.value })}
+                    onChange={e => {
+                      setFormData({ ...formData, stock: e.target.value });
+                      if (validationErrors.stock) setValidationErrors(prev => ({ ...prev, stock: '' }));
+                    }}
                     placeholder="25"
-                    className="input-premium font-semibold"
+                    className={`input-premium font-semibold ${validationErrors.stock ? 'border-rose-300 focus:border-rose-500' : ''}`}
                   />
+                  {validationErrors.stock && <p className="mt-1 text-[11px] font-medium text-rose-600">{validationErrors.stock}</p>}
                 </div>
               </div>
 
@@ -471,11 +545,15 @@ export function AddProductModal() {
                   <input
                     type="text"
                     value={formData.image}
-                    onChange={e => setFormData({ ...formData, image: e.target.value })}
+                    onChange={e => {
+                      setFormData({ ...formData, image: e.target.value });
+                      if (validationErrors.image) setValidationErrors(prev => ({ ...prev, image: '' }));
+                    }}
                     placeholder="https://images.unsplash.com/..."
-                    className="input-premium"
+                    className={`input-premium ${validationErrors.image ? 'border-rose-300 focus:border-rose-500' : ''}`}
                   />
                 </div>
+                {validationErrors.image && <p className="mt-1 text-[11px] font-medium text-rose-600">{validationErrors.image}</p>}
               </div>
 
               {/* Sample Preset Thumbnails */}
@@ -545,7 +623,10 @@ export function AddProductModal() {
             <button
               type="button"
               disabled={activeStep === 1}
-              onClick={() => setActiveStep(prev => prev - 1)}
+              onClick={() => {
+                setValidationErrors({});
+                setActiveStep(prev => prev - 1);
+              }}
               className="btn-secondary py-2 px-4 text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Previous Step
@@ -555,7 +636,9 @@ export function AddProductModal() {
               {activeStep < 4 ? (
                 <button
                   type="button"
-                  onClick={() => setActiveStep(prev => prev + 1)}
+                  onClick={() => {
+                    if (validateStep(activeStep)) setActiveStep(prev => prev + 1);
+                  }}
                   className="btn-primary py-2 px-5 text-xs font-semibold"
                 >
                   Continue

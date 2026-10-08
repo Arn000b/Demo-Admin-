@@ -12,8 +12,7 @@ import {
   User,
   Settings,
   LogOut,
-  Sparkles,
-  SlidersHorizontal
+  Sparkles
 } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { formatTimeAgo } from '../../utils/formatters';
@@ -26,7 +25,9 @@ export function TopHeader({ onToggleSidebar }) {
     markAllNotificationsAsRead,
     setIsAddProductOpen,
     setIsAddBannerOpen,
-    setActiveTab
+    setActiveTab,
+    setIsProfileEditOpen,
+    profile
   } = useStore();
 
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -38,6 +39,9 @@ export function TopHeader({ onToggleSidebar }) {
   const quickRef = useRef(null);
 
   const unreadCount = notifications.filter(n => !n.read).length;
+  const shortcutLabel = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
+    ? '⌘ K'
+    : 'Ctrl K';
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -57,49 +61,49 @@ export function TopHeader({ onToggleSidebar }) {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 h-20 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-8 flex items-center justify-between shadow-xs">
-      {/* Left side: Mobile Hamburger & Global Search */}
-      <div className="flex items-center gap-4 flex-1 max-w-xl">
+    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-3 border-b border-slate-200/80 bg-white/95 px-3 shadow-sm backdrop-blur-md sm:px-6">
+      {/* Global navigation and search */}
+      <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
         <button
           onClick={onToggleSidebar}
-          className="p-2 text-slate-600 hover:text-brand-900 hover:bg-slate-100 rounded-xl lg:hidden transition-colors"
-          aria-label="Toggle Navigation"
+          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-slate-100 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700 xl:hidden"
+          aria-label="Open navigation menu"
         >
-          <Menu className="w-6 h-6" />
+          <Menu className="h-5 w-5" />
         </button>
 
-        {/* Global Search Pill Bar */}
-        <div
+        <button
+          type="button"
           onClick={() => setIsSearchOpen(true)}
-          className="w-full max-w-md flex items-center justify-between px-4 py-2.5 bg-slate-100/90 hover:bg-slate-200/70 border border-slate-200/80 rounded-2xl cursor-pointer transition-all duration-200 group"
+          className="group flex h-11 min-w-0 w-full items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 text-left transition-colors hover:border-slate-300 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700 sm:gap-3 sm:px-3.5 xl:min-w-[360px] xl:max-w-[460px]"
+          aria-label="Open global search"
+          aria-keyshortcuts={shortcutLabel.replace(' ', '')}
         >
-          <div className="flex items-center gap-2.5 text-slate-400 group-hover:text-slate-600">
-            <Search className="w-4 h-4 text-brand-900" />
-            <span className="text-xs sm:text-sm font-medium text-slate-500">
-              Quick search products, orders, customers...
-            </span>
-          </div>
-          <kbd className="hidden sm:inline-flex items-center gap-1 text-[11px] font-mono text-slate-500 bg-white px-2 py-0.5 rounded-lg border border-slate-200 shadow-2xs">
-            <span>⌘</span>K
-          </kbd>
-        </div>
+          <Search className="h-[18px] w-[18px] shrink-0 text-brand-800" />
+          <span className="min-w-0 flex-1 truncate text-xs font-medium text-slate-500 sm:text-sm">
+            <span className="sm:hidden">Search...</span>
+            <span className="hidden sm:inline">Search products, orders, customers...</span>
+          </span>
+        </button>
       </div>
 
-      {/* Right side: Quick Add, Notifications, Profile */}
-      <div className="flex items-center gap-3">
+      {/* Global actions */}
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
         {/* Quick Add Button & Dropdown */}
         <div className="relative" ref={quickRef}>
           <button
             onClick={() => setIsQuickActionOpen(prev => !prev)}
-            className="btn-primary py-2 px-3.5 sm:px-4 text-xs sm:text-sm font-semibold flex items-center gap-2"
+            className="btn-primary h-10 gap-1.5 rounded-xl px-2.5 text-xs font-semibold focus-visible:ring-offset-2 sm:gap-2 sm:px-4 sm:text-sm"
+            aria-expanded={isQuickActionOpen}
+            aria-label="Create new entry"
           >
-            <Plus className="w-4 h-4 text-gold-400 stroke-[2.5]" />
+            <Plus className="h-4 w-4 text-gold-400 stroke-[2.5]" />
             <span className="hidden sm:inline">New Entry</span>
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isQuickActionOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`hidden h-3.5 w-3.5 transition-transform duration-200 sm:block ${isQuickActionOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {isQuickActionOpen && (
-            <div className="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 z-50 animate-slide-down">
+            <div className="absolute right-0 z-50 mt-2 w-52 rounded-2xl border border-slate-100 bg-white p-2 shadow-xl animate-slide-down" role="region" aria-label="Create new entry options">
               <button
                 onClick={() => {
                   setIsQuickActionOpen(false);
@@ -139,19 +143,20 @@ export function TopHeader({ onToggleSidebar }) {
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setIsNotifOpen(prev => !prev)}
-            className="relative p-2.5 rounded-2xl bg-slate-100/90 hover:bg-slate-200/80 text-slate-600 hover:text-brand-900 transition-colors"
-            aria-label="Notifications"
+            className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-slate-100 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700"
+            aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ''}`}
+            aria-expanded={isNotifOpen}
           >
-            <Bell className="w-5 h-5" />
+            <Bell className="h-5 w-5" />
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-extrabold flex items-center justify-center animate-pulse">
+              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white">
                 {unreadCount}
               </span>
             )}
           </button>
 
           {isNotifOpen && (
-            <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-50 animate-slide-down">
+            <div className="absolute right-0 z-50 mt-3 w-[min(24rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-2xl animate-slide-down" role="region" aria-label="Notifications">
               <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
                 <div className="flex items-center gap-2">
                   <h4 className="text-sm font-bold text-slate-800">Notifications</h4>
@@ -164,7 +169,7 @@ export function TopHeader({ onToggleSidebar }) {
                 {unreadCount > 0 && (
                   <button
                     onClick={markAllNotificationsAsRead}
-                    className="text-xs font-semibold text-brand-700 hover:text-brand-900 flex items-center gap-1 hover:underline"
+                    className="text-xs font-semibold text-brand-700 hover:text-brand-900 flex items-center gap-1 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700 rounded"
                   >
                     <CheckCheck className="w-3.5 h-3.5" />
                     <span>Mark all read</span>
@@ -179,10 +184,11 @@ export function TopHeader({ onToggleSidebar }) {
                   </div>
                 ) : (
                   notifications.map((n) => (
-                    <div
+                    <button
+                      type="button"
                       key={n.id}
                       onClick={() => markNotificationAsRead(n.id)}
-                      className={`p-3.5 flex items-start gap-3 hover:bg-slate-50 transition-colors cursor-pointer ${
+                      className={`w-full p-3.5 flex items-start gap-3 text-left hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-700 ${
                         !n.read ? 'bg-brand-50/30' : ''
                       }`}
                     >
@@ -210,7 +216,7 @@ export function TopHeader({ onToggleSidebar }) {
                           {n.message}
                         </p>
                       </div>
-                    </div>
+                    </button>
                   ))
                 )}
               </div>
@@ -222,39 +228,52 @@ export function TopHeader({ onToggleSidebar }) {
         <div className="relative" ref={profileRef}>
           <button
             onClick={() => setIsProfileOpen(prev => !prev)}
-            className="flex items-center gap-2.5 p-1.5 pr-3 rounded-2xl hover:bg-slate-100 transition-colors"
+            className="flex items-center gap-2 rounded-xl p-1.5 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700 sm:pr-2.5"
+            aria-label={`Account menu for ${profile.name}`}
+            aria-expanded={isProfileOpen}
           >
             <div className="relative">
               <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"
-                alt="Admin Profile"
-                className="w-10 h-10 rounded-2xl object-cover ring-2 ring-gold-400/80 shadow-xs"
+                src={profile.avatar}
+                alt=""
+                className="h-9 w-9 rounded-xl object-cover ring-1 ring-gold-500/60 sm:h-10 sm:w-10"
               />
-              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+              <span aria-hidden="true" className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500" />
             </div>
-            <div className="text-left hidden md:block">
-              <p className="text-xs font-bold text-slate-800 leading-tight">Anonna Rahman</p>
-              <p className="text-[10px] font-medium text-brand-700">Managing Director</p>
+            <div className="hidden text-left md:block">
+              <p className="max-w-28 truncate text-xs font-bold leading-tight text-slate-800">{profile.name}</p>
+              <p className="max-w-28 truncate text-[10px] font-medium text-brand-700">{profile.role}</p>
             </div>
-            <ChevronDown className={`w-3.5 h-3.5 text-slate-400 hidden md:block transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`hidden h-3.5 w-3.5 text-slate-400 transition-transform duration-200 md:block ${isProfileOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {isProfileOpen && (
-            <div className="absolute right-0 mt-3 w-60 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 z-50 animate-slide-down">
+            <div className="absolute right-0 z-50 mt-3 w-60 rounded-2xl border border-slate-100 bg-white p-2 shadow-xl animate-slide-down" role="region" aria-label="Account menu">
               <div className="p-3 border-b border-slate-100 mb-1">
-                <p className="text-xs font-bold text-slate-900">Anonna Rahman</p>
-                <p className="text-[11px] text-slate-400 truncate">anonna@anonnamart.com</p>
+                <p className="text-xs font-bold text-slate-900">{profile.name}</p>
+                <p className="text-[11px] text-slate-400 truncate">{profile.email}</p>
                 <span className="inline-block mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded-md bg-gold-100 text-gold-900">
-                  ★ Executive Admin
+                  ★ {profile.role}
                 </span>
               </div>
 
               <button
                 onClick={() => {
                   setIsProfileOpen(false);
+                  setIsProfileEditOpen(true);
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-50 text-xs font-medium text-slate-700 hover:text-brand-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700"
+              >
+                <User className="w-4 h-4 text-brand-600" />
+                <span>Edit Profile</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsProfileOpen(false);
                   setActiveTab('settings');
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-50 text-xs font-medium text-slate-700 hover:text-brand-900 transition-colors"
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-50 text-xs font-medium text-slate-700 hover:text-brand-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700"
               >
                 <Settings className="w-4 h-4 text-slate-400" />
                 <span>Store Settings</span>
@@ -265,7 +284,7 @@ export function TopHeader({ onToggleSidebar }) {
                   setIsProfileOpen(false);
                   setActiveTab('analytics');
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-50 text-xs font-medium text-slate-700 hover:text-brand-900 transition-colors"
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-50 text-xs font-medium text-slate-700 hover:text-brand-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700"
               >
                 <Sparkles className="w-4 h-4 text-gold-500" />
                 <span>Executive Reports</span>
@@ -278,7 +297,7 @@ export function TopHeader({ onToggleSidebar }) {
                   setIsProfileOpen(false);
                   window.location.reload();
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-rose-50 text-xs font-medium text-rose-600 transition-colors"
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-rose-50 text-xs font-medium text-rose-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"
               >
                 <LogOut className="w-4 h-4 text-rose-500" />
                 <span>Logout Session</span>

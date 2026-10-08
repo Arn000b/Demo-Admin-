@@ -324,12 +324,11 @@ export function ProductListView() {
                       className="rounded text-brand-900 focus:ring-brand-700 border-slate-300"
                     />
                   </th>
-                  <th className="py-3.5 px-4">Product Details</th>
+                  <th className="py-3.5 px-4">Product</th>
                   <th className="py-3.5 px-4">Category</th>
-                  <th className="py-3.5 px-4">SKU</th>
                   <th className="py-3.5 px-4">Price</th>
-                  <th className="py-3.5 px-4">Stock Status</th>
-                  <th className="py-3.5 px-4">Performance</th>
+                  <th className="py-3.5 px-4">Stock</th>
+                  <th className="py-3.5 px-4">Sales</th>
                   <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
@@ -352,22 +351,20 @@ export function ProductListView() {
                           className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0"
                         />
                         <div>
-                          <p className="font-bold text-slate-900 hover:text-brand-900 transition-colors cursor-pointer line-clamp-1" onClick={() => setEditingProduct(prod)}>
+                          <p 
+                            className="font-bold text-slate-900 hover:text-brand-900 transition-colors cursor-pointer line-clamp-1" 
+                            onClick={() => setEditingProduct(prod)}
+                          >
                             {prod.name}
                           </p>
-                          <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1">
-                            {prod.description}
+                          <p className="text-[11px] text-slate-500 font-mono mt-0.5">
+                            {prod.sku}
                           </p>
                         </div>
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
                       <CategoryBadge category={prod.category} />
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className="font-mono text-slate-600 bg-slate-100 px-2 py-0.5 rounded text-[11px]">
-                        {prod.sku}
-                      </span>
                     </td>
                     <td className="py-3.5 px-4">
                       <div>
@@ -385,12 +382,12 @@ export function ProductListView() {
                       <StockBadge status={prod.status} stock={prod.stock} />
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-1.5">
-                        <div className="flex items-center text-amber-500 font-bold text-xs">
-                          <Star className="w-3.5 h-3.5 fill-amber-400 mr-0.5" />
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-semibold text-slate-800 text-xs">{prod.salesCount || 0} sold</span>
+                        <div className="flex items-center text-amber-500 font-bold text-[11px]">
+                          <Star className="w-3 h-3 fill-amber-400 mr-0.5" />
                           <span>{prod.rating}</span>
                         </div>
-                        <span className="text-slate-400">• {prod.salesCount || 0} sold</span>
                       </div>
                     </td>
                     <td className="py-3.5 px-4 text-right">

@@ -13,6 +13,11 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
+  :focus-visible {
+    outline: 2px solid #1A4D2E;
+    outline-offset: 2px;
+  }
+
   /* Custom subtle scrollbars */
   ::-webkit-scrollbar {
     width: 6px;
@@ -32,15 +37,15 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-white bg-brand-900 hover:bg-brand-800 active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-forest-glow disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex min-h-[42px] items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-medium text-white bg-brand-900 hover:bg-brand-800 active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-forest-glow disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700 focus-visible:ring-offset-2;
   }
 
   .btn-gold {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-brand-950 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-600 hover:from-gold-300 hover:to-gold-500 active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-gold-glow;
+    @apply inline-flex min-h-[42px] items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold text-brand-950 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-600 hover:from-gold-300 hover:to-gold-500 active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-gold-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700 focus-visible:ring-offset-2;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:scale-[0.98] transition-all duration-200 shadow-sm;
+    @apply inline-flex min-h-[42px] items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 active:scale-[0.98] transition-all duration-200 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700 focus-visible:ring-offset-2;
   }
 
   .card-premium {
@@ -52,7 +57,7 @@
   }
 
   .input-premium {
-    @apply w-full px-3.5 py-2.5 bg-white rounded-xl border border-slate-200 text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-brand-700/20 focus:border-brand-700 transition-all;
+    @apply min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-700/20 focus:border-brand-700 transition-all;
   }
 
   .badge-chip {
