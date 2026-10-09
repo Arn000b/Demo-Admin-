@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  devIndicators: false, // Black 'N' dev button-ti hide korar jonno
+
   // Transpile workspace packages (source TS, no pre-build step needed)
   transpilePackages: ['@repo/type'],
 
@@ -10,7 +12,7 @@ const nextConfig = {
   // Recommended: enable strict mode
   reactStrictMode: true,
 
-  // Image optimization — add your domains here
+  // Image optimization - add your domains here
   images: {
     remotePatterns: [
       {

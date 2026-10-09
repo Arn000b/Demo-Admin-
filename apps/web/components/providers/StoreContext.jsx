@@ -68,50 +68,16 @@ export function StoreProvider({ children }) {
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
   
   // Entity Data State
-  const [categories, setCategories] = useState(() => {
-    const saved = safeGetItem('anonna_categories');
-    return saved ? JSON.parse(saved) : INITIAL_CATEGORIES;
-  });
-
-  const [products, setProducts] = useState(() => {
-    const saved = safeGetItem('anonna_products');
-    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
-  });
-
-  const [orders, setOrders] = useState(() => {
-    const saved = safeGetItem('anonna_orders');
-    return saved ? JSON.parse(saved) : INITIAL_ORDERS;
-  });
-
-  const [customers, setCustomers] = useState(() => {
-    const saved = safeGetItem('anonna_customers');
-    return saved ? JSON.parse(saved) : INITIAL_CUSTOMERS;
-  });
-
-  const [vendors, setVendors] = useState(() => {
-    const saved = safeGetItem('anonna_vendors');
-    return saved ? JSON.parse(saved) : INITIAL_VENDORS;
-  });
-
-  const [banners, setBanners] = useState(() => {
-    const saved = safeGetItem('anonna_banners');
-    return saved ? JSON.parse(saved) : INITIAL_BANNERS;
-  });
-
-  const [coupons, setCoupons] = useState(() => {
-    const saved = safeGetItem('anonna_coupons');
-    return saved ? JSON.parse(saved) : INITIAL_COUPONS;
-  });
-
-  const [settings, setSettings] = useState(() => {
-    const saved = safeGetItem('anonna_settings');
-    return saved ? JSON.parse(saved) : STORE_SETTINGS;
-  });
-
-  const [profile, setProfile] = useState(() => {
-    const saved = safeGetItem('anonna_profile');
-    return saved ? JSON.parse(saved) : DEFAULT_PROFILE;
-  });
+  const [hasHydrated, setHasHydrated] = useState(false);
+  const [categories, setCategories] = useState(INITIAL_CATEGORIES);
+  const [products, setProducts] = useState(INITIAL_PRODUCTS);
+  const [orders, setOrders] = useState(INITIAL_ORDERS);
+  const [customers, setCustomers] = useState(INITIAL_CUSTOMERS);
+  const [vendors, setVendors] = useState(INITIAL_VENDORS);
+  const [banners, setBanners] = useState(INITIAL_BANNERS);
+  const [coupons, setCoupons] = useState(INITIAL_COUPONS);
+  const [settings, setSettings] = useState(STORE_SETTINGS);
+  const [profile, setProfile] = useState(DEFAULT_PROFILE);
 
   // Modal State
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
@@ -164,6 +130,29 @@ export function StoreProvider({ children }) {
   // Toast Notifications
   const [toasts, setToasts] = useState([]);
 
+  useEffect(() => {
+    const savedCategories = safeGetItem('anonna_categories');
+    const savedProducts = safeGetItem('anonna_products');
+    const savedOrders = safeGetItem('anonna_orders');
+    const savedCustomers = safeGetItem('anonna_customers');
+    const savedVendors = safeGetItem('anonna_vendors');
+    const savedBanners = safeGetItem('anonna_banners');
+    const savedCoupons = safeGetItem('anonna_coupons');
+    const savedSettings = safeGetItem('anonna_settings');
+    const savedProfile = safeGetItem('anonna_profile');
+
+    if (savedCategories) setCategories(JSON.parse(savedCategories));
+    if (savedProducts) setProducts(JSON.parse(savedProducts));
+    if (savedOrders) setOrders(JSON.parse(savedOrders));
+    if (savedCustomers) setCustomers(JSON.parse(savedCustomers));
+    if (savedVendors) setVendors(JSON.parse(savedVendors));
+    if (savedBanners) setBanners(JSON.parse(savedBanners));
+    if (savedCoupons) setCoupons(JSON.parse(savedCoupons));
+    if (savedSettings) setSettings(JSON.parse(savedSettings));
+    if (savedProfile) setProfile(JSON.parse(savedProfile));
+    setHasHydrated(true);
+  }, []);
+
   const showToast = (title, message = '', type = 'success') => {
     const id = Date.now() + Math.random();
     setToasts(prev => [...prev, { id, title, message, type }]);
@@ -178,36 +167,44 @@ export function StoreProvider({ children }) {
 
   // Sync to LocalStorage
   useEffect(() => {
+    if (!hasHydrated) return;
     safeSetItem('anonna_categories', JSON.stringify(categories));
-  }, [categories]);
+  }, [categories, hasHydrated]);
 
   useEffect(() => {
+    if (!hasHydrated) return;
     safeSetItem('anonna_products', JSON.stringify(products));
-  }, [products]);
+  }, [products, hasHydrated]);
 
   useEffect(() => {
+    if (!hasHydrated) return;
     safeSetItem('anonna_orders', JSON.stringify(orders));
-  }, [orders]);
+  }, [orders, hasHydrated]);
 
   useEffect(() => {
+    if (!hasHydrated) return;
     safeSetItem('anonna_customers', JSON.stringify(customers));
-  }, [customers]);
+  }, [customers, hasHydrated]);
 
   useEffect(() => {
+    if (!hasHydrated) return;
     safeSetItem('anonna_banners', JSON.stringify(banners));
-  }, [banners]);
+  }, [banners, hasHydrated]);
 
   useEffect(() => {
+    if (!hasHydrated) return;
     safeSetItem('anonna_coupons', JSON.stringify(coupons));
-  }, [coupons]);
+  }, [coupons, hasHydrated]);
 
   useEffect(() => {
+    if (!hasHydrated) return;
     safeSetItem('anonna_settings', JSON.stringify(settings));
-  }, [settings]);
+  }, [settings, hasHydrated]);
 
   useEffect(() => {
+    if (!hasHydrated) return;
     safeSetItem('anonna_profile', JSON.stringify(profile));
-  }, [profile]);
+  }, [profile, hasHydrated]);
 
   const normalizeCategoryName = (value) => value.trim().replace(/\s+/g, ' ');
 
