@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <linearGradient id="forestGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F3821" />
+      <stop offset="100%" stop-color="#1A4D2E" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE082" />
+      <stop offset="50%" stop-color="#D4AF37" />
+      <stop offset="100%" stop-color="#AA820A" />
+    </linearGradient>
+  </defs>
+  <!-- Background Shield/Rounded Square -->
+  <rect x="10" y="10" width="180" height="180" rx="42" fill="url(#forestGrad)" />
+  <rect x="14" y="14" width="172" height="172" rx="38" stroke="url(#goldGrad)" stroke-width="2.5" opacity="0.6" stroke-dasharray="8 4" fill="none" />
+  
+  <!-- Crown / E-commerce Diamond Leaf Motif -->
+  <path d="M70 72L100 48L130 72L120 95H80L70 72Z" fill="url(#goldGrad)" opacity="0.9" />
+  <circle cx="100" cy="48" r="5" fill="#FFF8E1" />
+  <circle cx="70" cy="72" r="4" fill="#FFF8E1" />
+  <circle cx="130" cy="72" r="4" fill="#FFF8E1" />
+
+  <!-- Stylized Monogram Letter 'A' + 'M' intertwine -->
+  <path d="M100 82L68 145H86L100 114L114 145H132L100 82Z" fill="#FFFFFF" />
+  <path d="M88 122H112" stroke="url(#goldGrad)" stroke-width="4" stroke-linecap="round" />
+  
+  <!-- Star Sparkle -->
+  <path d="M100 95L103 103L111 106L103 109L100 117L97 109L89 106L97 103L100 95Z" fill="url(#goldGrad)" />
+</svg>
