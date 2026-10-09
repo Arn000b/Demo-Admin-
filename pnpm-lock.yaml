@@ -135,6 +135,8 @@ importers:
         specifier: ^5.5.0
         version: 5.9.3
 
+  packages/typescript-config: {}
+
 packages:
 
   '@alloc/quick-lru@5.3.0':
