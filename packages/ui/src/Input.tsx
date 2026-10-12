@@ -1,7 +1,7 @@
-import { cn } from '@/lib/utils';
 import { type InputHTMLAttributes, forwardRef } from 'react';
+import { cn } from './utils';
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   hint?: string;
@@ -14,7 +14,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full space-y-1.5">
         {label && (
-          <label htmlFor={inputId} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            htmlFor={inputId}
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             {label}
           </label>
         )}
@@ -27,9 +30,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             'placeholder:text-gray-400 dark:placeholder:text-gray-500',
             'focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2',
             'disabled:cursor-not-allowed disabled:opacity-50',
-            error
-              ? 'border-red-500 focus:ring-red-500'
-              : 'border-gray-300 dark:border-gray-700',
+            error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-700',
             className
           )}
           aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}

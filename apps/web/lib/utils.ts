@@ -1,16 +1,6 @@
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { cn } from '@repo/ui';
 
-/**
- * Merge Tailwind CSS classes safely, resolving conflicts.
- * Drop-in replacement for the `cn` utility used in shadcn/ui.
- *
- * @example
- * cn('px-4 py-2', isActive && 'bg-brand-600', className)
- */
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+export { cn };
 
 /**
  * Format a date string to a locale-aware readable format.

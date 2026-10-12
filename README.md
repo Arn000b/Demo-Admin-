@@ -8,6 +8,7 @@ An e-commerce administration platform organized as a pnpm and Turborepo monorepo
 - `apps/api` - Hono API service.
 - `packages/db` - shared Drizzle ORM database schema and migrations.
 - `packages/type` - shared TypeScript types.
+- `packages/ui` - shared React UI components and design-system primitives.
 - `packages/typescript-config` - shared TypeScript compiler defaults.
 
 ## Requirements

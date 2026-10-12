@@ -6,6 +6,7 @@ module.exports = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './hooks/**/*.{js,ts,tsx}',
     './lib/**/*.{js,ts,tsx}',
+    '../../packages/ui/src/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     extend: {

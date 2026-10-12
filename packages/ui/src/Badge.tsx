@@ -1,7 +1,7 @@
-import { cn } from '@/lib/utils';
 import { type HTMLAttributes } from 'react';
+import { cn } from './utils';
 
-interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
+export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   variant?: 'default' | 'success' | 'warning' | 'danger' | 'info';
 }
 
@@ -22,8 +22,6 @@ export function Badge({ variant = 'default', className, children, ...props }: Ba
         className
       )}
       {...props}
-    >
-      {children}
-    </span>
+    />
   );
 }

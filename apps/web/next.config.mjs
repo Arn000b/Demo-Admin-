@@ -3,7 +3,7 @@ const nextConfig = {
   devIndicators: false, // Black 'N' dev button-ti hide korar jonno
 
   // Transpile workspace packages (source TS, no pre-build step needed)
-  transpilePackages: ['@repo/type'],
+  transpilePackages: ['@repo/type', '@repo/ui'],
 
   experimental: {
     // Enables the App Router (already default in Next 14, but explicit for clarity)

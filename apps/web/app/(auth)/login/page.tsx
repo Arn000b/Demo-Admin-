@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Button, Input } from '@repo/ui';
 
 export const metadata: Metadata = { title: 'Login' };
 
@@ -11,35 +12,27 @@ export default function LoginPage() {
       </p>
 
       <form className="space-y-4">
-        <div>
-          <label htmlFor="email" className="mb-1.5 block text-sm font-medium">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            placeholder="you@example.com"
-            className="w-full rounded-lg border px-3 py-2 text-sm outline-none ring-offset-2 transition focus:ring-2 focus:ring-brand-500 dark:bg-gray-800"
-          />
-        </div>
-        <div>
-          <label htmlFor="password" className="mb-1.5 block text-sm font-medium">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            placeholder="••••••••"
-            className="w-full rounded-lg border px-3 py-2 text-sm outline-none ring-offset-2 transition focus:ring-2 focus:ring-brand-500 dark:bg-gray-800"
-          />
-        </div>
+        <Input
+          id="email"
+          label="Email"
+          type="email"
+          placeholder="you@example.com"
+          className="h-10 py-2"
+        />
+        <Input
+          id="password"
+          label="Password"
+          type="password"
+          placeholder="••••••••"
+          className="h-10 py-2"
+        />
 
-        <button
+        <Button
           type="submit"
-          className="w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
+          className="h-10 w-full py-2.5 font-semibold"
         >
           Sign in
-        </button>
+        </Button>
       </form>
     </div>
   );
