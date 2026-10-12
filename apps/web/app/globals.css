@@ -6,10 +6,15 @@
   :root {
     --primary: 15 56 33;
     --accent-gold: 212 175 55;
+    --background: #ffffff;
+    --foreground: #171717;
+    color-scheme: light;
   }
 
   body {
-    @apply antialiased bg-[#F4F7F5] text-slate-800;
+    @apply antialiased;
+    background-color: var(--background);
+    color: var(--foreground);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
