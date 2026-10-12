@@ -254,7 +254,7 @@ export function TopHeader({ onToggleSidebar }) {
                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-rose-50 text-xs font-medium text-rose-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"
               >
                 <LogOut className="w-4 h-4 text-rose-500" />
-                <span>Logout Session</span>
+                <span>Logout</span>
               </button>
             </div>
           )}

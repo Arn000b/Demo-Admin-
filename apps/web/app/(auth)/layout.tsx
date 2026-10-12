@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { Logo } from '@/components/common/Logo';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Auth',
-    template: '%s | Auth',
+    default: 'Customer account',
+    template: '%s | Anonna Mart',
   },
 };
 
@@ -13,11 +14,11 @@ export const metadata: Metadata = {
  */
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-surface-secondary px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#fcf9f2] px-4 py-10">
       <div className="w-full max-w-md">
         {/* Logo / Brand */}
-        <div className="mb-8 text-center">
-          <span className="text-2xl font-bold text-brand-600 dark:text-brand-400">YourBrand</span>
+        <div className="mb-10 text-center">
+          <Logo width={224} height={100} className="mx-auto" variant="wordmark" />
         </div>
         {children}
       </div>

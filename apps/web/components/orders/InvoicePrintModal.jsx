@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Printer, Download, CheckCircle, ShieldCheck } from 'lucide-react';
+import { Logo } from '@/components/common/Logo';
 import { useStore } from '@/components/providers/StoreContext';
 import { formatCurrency, formatDate } from '@/lib/utils/formatters';
 
@@ -55,17 +56,7 @@ export function InvoicePrintModal() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-start justify-between pb-8 border-b-2 border-brand-900 gap-6">
             <div>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-brand-900 p-2 flex items-center justify-center text-gold-400 font-serif font-black text-2xl shadow-md">
-                  A
-                </div>
-                <div>
-                  <h1 className="text-2xl font-extrabold font-display text-brand-950 tracking-wide">
-                    ANONNA<span className="text-gold-600">MART</span>
-                  </h1>
-                  <p className="text-xs font-medium text-slate-500">Premium Lifestyle & Artisanal Pantry</p>
-                </div>
-              </div>
+              <Logo width={200} height={92} href={null} />
               <div className="mt-3 text-xs text-slate-500 leading-relaxed">
                 <p>Anonna Mart HQ, Road 11, Banani, Dhaka 1213</p>
                 <p>BIN/VAT Registration: #88392019-BIN</p>

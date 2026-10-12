@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { StoreProvider } from '@/components/providers/StoreContext';
+import { CustomerDemoProvider } from '@/components/providers/CustomerDemoContext';
+import { AuthProvider } from '@/context/auth-context';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -19,10 +21,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={inter.variable}>
-      <body className="font-sans">
+    <html lang="en" className={`light ${inter.variable}`}>
+      <body className="bg-slate-50 font-sans text-slate-900 antialiased">
         <StoreProvider>
-          {children}
+          <AuthProvider>
+            <CustomerDemoProvider>{children}</CustomerDemoProvider>
+          </AuthProvider>
         </StoreProvider>
       </body>
     </html>

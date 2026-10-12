@@ -1,9 +1,11 @@
-import { redirect } from 'next/navigation';
+import type { Metadata } from 'next';
+import { StorefrontHome } from '@/components/storefront/StorefrontHome';
 
-/**
- * Root page — redirect to the app dashboard.
- * Unauthenticated users are redirected to /login in the middleware.
- */
-export default function RootPage() {
-  redirect('/dashboard');
+export const metadata: Metadata = {
+  title: 'Anonna Mart | Curated Finds for Everyday Living',
+  description: 'Shop thoughtfully curated home, fashion, and pantry essentials at Anonna Mart.',
+};
+
+export default function HomePage() {
+  return <StorefrontHome />;
 }

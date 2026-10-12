@@ -8,6 +8,9 @@
     --accent-gold: 212 175 55;
     --background: #ffffff;
     --foreground: #171717;
+  }
+
+  html {
     color-scheme: light;
   }
 

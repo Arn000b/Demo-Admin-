@@ -7,12 +7,17 @@ import {
   Megaphone,
   BarChart3,
   Settings,
+  Sparkles,
   X,
 } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Logo } from '@/components/common/Logo';
 import { useStore } from '@/components/providers/StoreContext';
 
 export function Sidebar({ isOpen, onClose }) {
   const { activeTab, setActiveTab, products, orders } = useStore();
+  const pathname = usePathname();
+  const router = useRouter();
 
   const pendingOrdersCount = orders.filter(o => o.orderStatus === 'Pending' || o.orderStatus === 'Processing').length;
   const lowStockCount = products.filter(p => p.stock <= (p.minStockAlert || 5)).length;
@@ -34,7 +39,8 @@ export function Sidebar({ isOpen, onClose }) {
     {
       title: 'Catalog',
       items: [
-        { id: 'products', label: 'Products', icon: Package, badge: lowStockCount > 0 ? `${lowStockCount} Low` : null, badgeType: 'warning' }
+        { id: 'products', label: 'Products', icon: Package, badge: lowStockCount > 0 ? `${lowStockCount} Low` : null, badgeType: 'warning' },
+        { id: 'featured', label: 'Featured Picks', icon: Sparkles, badge: null, route: '/admin/featured' }
       ]
     },
     {
@@ -59,6 +65,12 @@ export function Sidebar({ isOpen, onClose }) {
 
   const handleNavClick = (tabId) => {
     setActiveTab(tabId);
+    const item = navGroups.flatMap(group => group.items).find(navItem => navItem.id === tabId);
+    if (item?.route) {
+      router.push(item.route);
+    } else if (pathname === '/admin/featured') {
+      router.push('/dashboard');
+    }
     if (onClose) onClose();
   };
 
@@ -74,29 +86,13 @@ export function Sidebar({ isOpen, onClose }) {
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-brand-900/60 bg-brand-950 text-white shadow-2xl transition-transform duration-300 ease-in-out xl:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-white/10 bg-gradient-to-b from-[#022c22] via-[#064e3b] to-[#0e4e3e] text-white shadow-2xl transition-transform duration-300 ease-in-out xl:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Brand Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-white/10 px-4 py-3.5">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 shrink-0 rounded-xl bg-gradient-to-br from-gold-400 to-gold-600 p-0.5 shadow-gold-glow">
-              <div className="flex h-full w-full items-center justify-center rounded-[10px] bg-brand-950">
-                <span className="font-serif text-lg font-black text-gold-300">A</span>
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <h1 className="font-display font-extrabold text-lg text-white tracking-wide">
-                  ANONNA<span className="text-gold-400">MART</span>
-                </h1>
-              </div>
-              <p className="text-[11px] font-medium text-emerald-300/80 uppercase tracking-widest">
-                Admin Control Center
-              </p>
-            </div>
-          </div>
+          <Logo width={176} height={76} className="max-w-[calc(100%-3rem)] bg-transparent" />
           <button
             type="button"
             onClick={onClose}
@@ -112,28 +108,30 @@ export function Sidebar({ isOpen, onClose }) {
         <nav aria-label="Main navigation" className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-3">
           {navGroups.map((group, groupIdx) => (
             <div key={groupIdx} className="space-y-0.5">
-              <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400/90">
+              <p className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-wider text-emerald-300/60">
                 {group.title}
               </p>
 
               {group.items.map((item) => {
                 const Icon = item.icon;
-                const isActive = activeTab === item.id;
+                const isActive = item.id === 'featured'
+                  ? pathname === item.route
+                  : activeTab === item.id && pathname !== '/admin/featured';
 
                 return (
                   <button
                     key={item.id}
                     onClick={() => handleNavClick(item.id)}
                     aria-current={isActive ? 'page' : undefined}
-                    className={`group flex min-h-10 w-full items-center justify-between rounded-xl px-3 py-2 font-medium text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
+                    className={`group flex min-h-10 w-full items-center justify-between rounded-l-xl rounded-r-md border-r-4 px-3 py-2 text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 ${
                       isActive
-                        ? 'bg-white/10 text-white ring-1 ring-inset ring-white/10'
-                        : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                        ? 'border-[#D4AF37] bg-white/15 font-medium text-white'
+                        : 'border-transparent font-medium text-emerald-100/80 hover:bg-white/10 hover:text-white'
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Icon className={`h-[18px] w-[18px] shrink-0 ${isActive ? 'text-gold-300' : 'text-slate-400 group-hover:text-gold-300'}`} />
-                      <span className={isActive ? 'font-semibold text-white' : ''}>
+                      <Icon className={`h-[18px] w-[18px] shrink-0 ${isActive ? 'text-gold-300' : 'text-emerald-200/70 group-hover:text-white'}`} />
+                      <span className={isActive ? 'font-medium text-white' : ''}>
                         {item.label}
                       </span>
                     </div>
@@ -161,7 +159,7 @@ export function Sidebar({ isOpen, onClose }) {
         </nav>
 
         <div className="shrink-0 border-t border-white/10 px-4 py-2.5">
-          <div className="flex items-center gap-2 text-[11px] font-medium text-slate-400">
+          <div className="flex items-center gap-2 text-[11px] font-medium text-emerald-100/70">
             <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
             <span>All systems operational</span>
           </div>

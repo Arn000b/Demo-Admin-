@@ -19,6 +19,20 @@ const safeSetItem = (key, value) => {
   if (isBrowser) localStorage.setItem(key, value);
 };
 
+const parseFeaturedProductIds = (value, fallback, storageKey) => {
+  if (!value) return fallback;
+  try {
+    const productIds = JSON.parse(value);
+    if (Array.isArray(productIds) && productIds.every(id => typeof id === 'string')) {
+      return productIds;
+    }
+    console.error(`Ignoring invalid ${storageKey} value; expected an array of product IDs.`);
+  } catch (error) {
+    console.error(`Unable to read ${storageKey} from localStorage.`, error);
+  }
+  return fallback;
+};
+
 const DEFAULT_PROFILE = {
   name: 'Anonna Rahman',
   email: 'anonna@anonnamart.com',
@@ -71,6 +85,12 @@ export function StoreProvider({ children }) {
   const [hasHydrated, setHasHydrated] = useState(false);
   const [categories, setCategories] = useState(INITIAL_CATEGORIES);
   const [products, setProducts] = useState(INITIAL_PRODUCTS);
+  const [featuredProductIds, setFeaturedProductIds] = useState(
+    () => INITIAL_PRODUCTS.filter(product => product.featured).map(product => product.id)
+  );
+  const [visibleFeaturedProductIds, setVisibleFeaturedProductIds] = useState(
+    () => INITIAL_PRODUCTS.filter(product => product.featured).map(product => product.id)
+  );
   const [orders, setOrders] = useState(INITIAL_ORDERS);
   const [customers, setCustomers] = useState(INITIAL_CUSTOMERS);
   const [vendors, setVendors] = useState(INITIAL_VENDORS);
@@ -133,6 +153,8 @@ export function StoreProvider({ children }) {
   useEffect(() => {
     const savedCategories = safeGetItem('anonna_categories');
     const savedProducts = safeGetItem('anonna_products');
+    const savedFeaturedProducts = safeGetItem('anonna_featured_products');
+    const savedVisibleFeaturedProducts = safeGetItem('anonna_featured_visible_products');
     const savedOrders = safeGetItem('anonna_orders');
     const savedCustomers = safeGetItem('anonna_customers');
     const savedVendors = safeGetItem('anonna_vendors');
@@ -143,6 +165,20 @@ export function StoreProvider({ children }) {
 
     if (savedCategories) setCategories(JSON.parse(savedCategories));
     if (savedProducts) setProducts(JSON.parse(savedProducts));
+    const initialFeaturedIds = INITIAL_PRODUCTS.filter(product => product.featured).map(product => product.id);
+    const featuredIds = parseFeaturedProductIds(
+      savedFeaturedProducts,
+      initialFeaturedIds,
+      'anonna_featured_products'
+    );
+    setFeaturedProductIds(featuredIds);
+    setVisibleFeaturedProductIds(
+      parseFeaturedProductIds(
+        savedVisibleFeaturedProducts,
+        featuredIds,
+        'anonna_featured_visible_products'
+      )
+    );
     if (savedOrders) setOrders(JSON.parse(savedOrders));
     if (savedCustomers) setCustomers(JSON.parse(savedCustomers));
     if (savedVendors) setVendors(JSON.parse(savedVendors));
@@ -152,6 +188,56 @@ export function StoreProvider({ children }) {
     if (savedProfile) setProfile(JSON.parse(savedProfile));
     setHasHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (!hasHydrated) return;
+    safeSetItem('anonna_featured_products', JSON.stringify(featuredProductIds));
+  }, [featuredProductIds, hasHydrated]);
+
+  useEffect(() => {
+    if (!hasHydrated) return;
+    safeSetItem('anonna_featured_visible_products', JSON.stringify(visibleFeaturedProductIds));
+  }, [visibleFeaturedProductIds, hasHydrated]);
+
+  useEffect(() => {
+    const syncFeaturedProducts = event => {
+      if (event.key === 'anonna_featured_products') {
+        setFeaturedProductIds(parseFeaturedProductIds(event.newValue, [], event.key));
+      }
+      if (event.key === 'anonna_featured_visible_products') {
+        setVisibleFeaturedProductIds(parseFeaturedProductIds(event.newValue, [], event.key));
+      }
+    };
+    window.addEventListener('storage', syncFeaturedProducts);
+    return () => window.removeEventListener('storage', syncFeaturedProducts);
+  }, []);
+
+  const addFeaturedProduct = productId => {
+    setFeaturedProductIds(current => current.includes(productId) ? current : [...current, productId]);
+    setVisibleFeaturedProductIds(current => current.includes(productId) ? current : [...current, productId]);
+  };
+
+  const removeFeaturedProduct = productId => {
+    setFeaturedProductIds(current => current.filter(id => id !== productId));
+    setVisibleFeaturedProductIds(current => current.filter(id => id !== productId));
+  };
+
+  const toggleFeaturedProductVisibility = productId => {
+    setVisibleFeaturedProductIds(current => current.includes(productId)
+      ? current.filter(id => id !== productId)
+      : [...current, productId]);
+  };
+
+  const moveFeaturedProduct = (productId, direction) => {
+    setFeaturedProductIds(current => {
+      const currentIndex = current.indexOf(productId);
+      const targetIndex = currentIndex + direction;
+      if (currentIndex < 0 || targetIndex < 0 || targetIndex >= current.length) return current;
+      const next = [...current];
+      [next[currentIndex], next[targetIndex]] = [next[targetIndex], next[currentIndex]];
+      return next;
+    });
+  };
 
   const showToast = (title, message = '', type = 'success') => {
     const id = Date.now() + Math.random();
@@ -496,6 +582,12 @@ export function StoreProvider({ children }) {
         deleteCategory,
 
         products,
+        featuredProductIds,
+        visibleFeaturedProductIds,
+        addFeaturedProduct,
+        removeFeaturedProduct,
+        toggleFeaturedProductVisibility,
+        moveFeaturedProduct,
         addProduct,
         updateProduct,
         deleteProduct,
