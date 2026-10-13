@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Info } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
+import { useCustomerDemo } from '@/components/providers/CustomerDemoContext';
 
 const inputClass =
   'input-premium min-h-12 rounded-lg px-3 text-base aria-[invalid=true]:border-rose-600 aria-[invalid=true]:focus:ring-rose-600/20';
@@ -81,23 +82,73 @@ function PasswordInput({
 
 export function CustomerLoginForm() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, logout: clearCustomerLogin } = useAuth();
+  const { signOut: clearCustomerData } = useCustomerDemo();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [submitError, setSubmitError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setSubmitError('');
     const nextErrors: typeof errors = {};
-    if (!email.trim()) nextErrors.email = 'Enter your email address.';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      nextErrors.email = 'Enter a valid email address.';
-    }
+    if (!email.trim()) nextErrors.email = 'Enter your email address or admin ID.';
     if (!password) nextErrors.password = 'Enter your password.';
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length === 0) {
+    if (Object.keys(nextErrors).length > 0) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ username: email.trim(), password }),
+      });
+
+      if (response.ok) {
+        clearCustomerLogin();
+        clearCustomerData();
+        router.replace('/admin');
+        return;
+      }
+
+      if (response.status !== 401) {
+        const result: unknown = await response.json().catch(() => null);
+        const message =
+          typeof result === 'object' &&
+          result !== null &&
+          'error' in result &&
+          typeof result.error === 'string'
+            ? result.error
+            : 'Unable to sign in right now. Please try again.';
+        setSubmitError(message);
+        setIsSubmitting(false);
+        return;
+      }
+
+      const logoutResponse = await fetch('/api/admin/logout', {
+        method: 'POST',
+        credentials: 'same-origin',
+      });
+      if (!logoutResponse.ok) {
+        throw new Error('Unable to clear an existing admin session before customer sign-in.');
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+        setErrors({ email: 'Enter a valid email address.' });
+        setIsSubmitting(false);
+        return;
+      }
+
       login();
       router.replace('/account');
+    } catch (error) {
+      console.error('Unable to complete sign-in.', error);
+      setSubmitError('Unable to reach the sign-in service. Please try again.');
+      setIsSubmitting(false);
     }
   };
 
@@ -137,7 +188,10 @@ export function CustomerLoginForm() {
             Forgot password?
           </Link>
         </div>
-        <button type="submit" className={loginButtonClass}>Sign In</button>
+        {submitError && <p role="alert" className="text-sm text-rose-700">{submitError}</p>}
+        <button type="submit" disabled={isSubmitting} className={`${loginButtonClass} disabled:cursor-wait disabled:opacity-60`}>
+          {isSubmitting ? 'Signing in…' : 'Sign In'}
+        </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-slate-600">

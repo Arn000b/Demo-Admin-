@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
+import type { ReactNode } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopHeader } from '@/components/layout/TopHeader';
 import { SearchPalette } from '@/components/common/SearchPalette';
-import { ToastContainer } from '@/components/common/Toast';
 import { useStore } from '@/components/providers/StoreContext';
 
 // Page modules
@@ -31,6 +31,13 @@ export function DashboardShell() {
   const { activeTab } = useStore();
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const adminRouteViews: Record<string, ReactNode> = {
+    '/admin': <DashboardOverview />,
+    '/admin/products': <ProductListView />,
+    '/admin/orders': <OrderListView />,
+    '/admin/customers': <CustomerListView />,
+  };
+  const routeView = adminRouteViews[pathname];
 
   return (
     <div className="min-h-screen bg-[#F4F7F5] flex flex-col font-sans">
@@ -44,7 +51,7 @@ export function DashboardShell() {
 
         {/* Dynamic Page View Body */}
         <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto pb-16">
-          {pathname === '/admin/featured' ? <FeaturedProductsManagement /> : (
+          {pathname === '/admin/featured' ? <FeaturedProductsManagement /> : routeView || (
             <>
               {activeTab === 'dashboard' && <DashboardOverview />}
               {activeTab === 'products' && <ProductListView />}
@@ -77,7 +84,6 @@ export function DashboardShell() {
 
       {/* Modals and Overlays */}
       <SearchPalette />
-      <ToastContainer />
       <AddProductModal />
       <OrderDetailModal />
       <InvoicePrintModal />

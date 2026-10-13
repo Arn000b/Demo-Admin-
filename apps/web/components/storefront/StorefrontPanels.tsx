@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
 import { ProductThumbnail } from './ProductCard';
 import { formatTaka, type CartLine, type StorefrontProduct } from './types';
@@ -132,14 +133,13 @@ export function CartDrawer({
               <span className="font-bold text-slate-900">{formatTaka(subtotal)}</span>
             </div>
             <p className="mt-2 text-xs leading-5 text-slate-500">Delivery charges, if applicable, are calculated at checkout.</p>
-            <button
-              type="button"
-              disabled
-              className="mt-4 min-h-11 w-full cursor-not-allowed rounded-lg bg-slate-200 px-4 text-sm font-semibold text-slate-500"
-              title="Checkout is currently unavailable"
+            <Link
+              href="/checkout"
+              onClick={onClose}
+              className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-emerald-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2"
             >
-              Checkout currently unavailable
-            </button>
+              Continue to checkout
+            </Link>
           </div>
         </>
       ) : (

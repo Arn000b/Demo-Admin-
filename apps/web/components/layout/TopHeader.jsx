@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Search,
   Bell,
@@ -16,6 +17,8 @@ import {
 } from 'lucide-react';
 import { useStore } from '@/components/providers/StoreContext';
 import { formatTimeAgo } from '@/lib/utils/formatters';
+import { useAuth } from '@/context/auth-context';
+import { useCustomerDemo } from '@/components/providers/CustomerDemoContext';
 
 export function TopHeader({ onToggleSidebar }) {
   const {
@@ -27,18 +30,44 @@ export function TopHeader({ onToggleSidebar }) {
     setIsAddBannerOpen,
     setActiveTab,
     setIsProfileEditOpen,
-    profile
+    profile,
+    showToast
   } = useStore();
+  const router = useRouter();
+  const { logout: clearCustomerLogin } = useAuth();
+  const { signOut: clearCustomerData } = useCustomerDemo();
 
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isQuickActionOpen, setIsQuickActionOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const notifRef = useRef(null);
   const profileRef = useRef(null);
   const quickRef = useRef(null);
 
   const unreadCount = notifications.filter(n => !n.read).length;
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      const response = await fetch('/api/admin/logout', {
+        method: 'POST',
+        credentials: 'same-origin',
+      });
+      if (!response.ok) {
+        throw new Error(`Admin logout failed with status ${response.status}.`);
+      }
+      clearCustomerLogin();
+      clearCustomerData();
+      setIsProfileOpen(false);
+      router.replace('/');
+      router.refresh();
+    } catch (error) {
+      console.error('Unable to log out of the admin panel.', error);
+      showToast('Logout failed', 'Unable to end your admin session. Please try again.', 'error');
+      setIsLoggingOut(false);
+    }
+  };
   const shortcutLabel = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
     ? '⌘ K'
     : 'Ctrl K';
@@ -247,14 +276,13 @@ export function TopHeader({ onToggleSidebar }) {
               <div className="border-t border-slate-100 my-1"></div>
 
               <button
-                onClick={() => {
-                  setIsProfileOpen(false);
-                  window.location.reload();
-                }}
+                type="button"
+                onClick={handleLogout}
+                disabled={isLoggingOut}
                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-rose-50 text-xs font-medium text-rose-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"
               >
                 <LogOut className="w-4 h-4 text-rose-500" />
-                <span>Logout</span>
+                <span>{isLoggingOut ? 'Logging out…' : 'Logout'}</span>
               </button>
             </div>
           )}

@@ -8,8 +8,10 @@ import {
   BarChart3,
   Settings,
   Sparkles,
+  ExternalLink,
   X,
 } from 'lucide-react';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Logo } from '@/components/common/Logo';
 import { useStore } from '@/components/providers/StoreContext';
@@ -26,20 +28,20 @@ export function Sidebar({ isOpen, onClose }) {
     {
       title: 'Main',
       items: [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null }
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null, route: '/admin' }
       ]
     },
     {
       title: 'Sales',
       items: [
-        { id: 'orders', label: 'Orders', icon: ShoppingBag, badge: pendingOrdersCount > 0 ? `${pendingOrdersCount} New` : null, badgeType: 'warning' },
-        { id: 'customers', label: 'Customers', icon: Users, badge: null }
+        { id: 'orders', label: 'Orders', icon: ShoppingBag, badge: pendingOrdersCount > 0 ? `${pendingOrdersCount} New` : null, badgeType: 'warning', route: '/admin/orders' },
+        { id: 'customers', label: 'Customers', icon: Users, badge: null, route: '/admin/customers' }
       ]
     },
     {
       title: 'Catalog',
       items: [
-        { id: 'products', label: 'Products', icon: Package, badge: lowStockCount > 0 ? `${lowStockCount} Low` : null, badgeType: 'warning' },
+        { id: 'products', label: 'Products', icon: Package, badge: lowStockCount > 0 ? `${lowStockCount} Low` : null, badgeType: 'warning', route: '/admin/products' },
         { id: 'featured', label: 'Featured Picks', icon: Sparkles, badge: null, route: '/admin/featured' }
       ]
     },
@@ -67,8 +69,8 @@ export function Sidebar({ isOpen, onClose }) {
     setActiveTab(tabId);
     const item = navGroups.flatMap(group => group.items).find(navItem => navItem.id === tabId);
     if (item?.route) {
-      router.push(item.route);
-    } else if (pathname === '/admin/featured') {
+      if (pathname !== item.route) router.push(item.route);
+    } else if (pathname.startsWith('/admin/')) {
       router.push('/dashboard');
     }
     if (onClose) onClose();
@@ -114,7 +116,7 @@ export function Sidebar({ isOpen, onClose }) {
 
               {group.items.map((item) => {
                 const Icon = item.icon;
-                const isActive = item.id === 'featured'
+                const isActive = item.route
                   ? pathname === item.route
                   : activeTab === item.id && pathname !== '/admin/featured';
 
@@ -158,11 +160,14 @@ export function Sidebar({ isOpen, onClose }) {
           ))}
         </nav>
 
-        <div className="shrink-0 border-t border-white/10 px-4 py-2.5">
-          <div className="flex items-center gap-2 text-[11px] font-medium text-emerald-100/70">
-            <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
-            <span>All systems operational</span>
-          </div>
+        <div className="shrink-0 border-t border-white/10 px-3 py-3">
+          <Link
+            href="/"
+            className="mb-3 flex min-h-10 items-center justify-between rounded-xl border border-white/15 bg-white/10 px-3 text-sm font-semibold text-white transition-colors hover:border-[#D4AF37]/60 hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400"
+          >
+            <span>View Public Site</span>
+            <ExternalLink className="h-4 w-4 text-[#D4AF37]" aria-hidden="true" />
+          </Link>
         </div>
       </aside>
     </>

@@ -28,6 +28,7 @@ interface CustomerDemoContextValue {
   addToCart: (product: StorefrontProduct) => boolean;
   setCartQuantity: (productId: string, quantity: number) => void;
   removeFromCart: (productId: string) => void;
+  clearCart: () => void;
   updateProfile: (profile: DemoCustomerProfile) => void;
   saveAddress: (address: DemoAddress) => void;
   deleteAddress: (addressId: string) => void;
@@ -109,6 +110,7 @@ export function CustomerDemoProvider({ children }: { children: ReactNode }) {
     setCartQuantity,
     removeFromCart: (productId) =>
       setCart((current) => current.filter((item) => item.productId !== productId)),
+    clearCart: () => setCart([]),
     updateProfile: setProfile,
     saveAddress,
     deleteAddress: (addressId) =>
