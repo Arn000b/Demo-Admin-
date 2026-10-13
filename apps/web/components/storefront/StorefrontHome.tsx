@@ -504,40 +504,88 @@ export function StorefrontHome() {
       </header>
 
       <main className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <section className="relative isolate mt-4 flex min-h-[340px] items-center overflow-hidden rounded-2xl bg-emerald-950 shadow-lg sm:mt-6 sm:min-h-[400px] lg:mt-8 lg:min-h-[440px]" aria-labelledby="hero-title">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=2000&q=85"
-            alt=""
-            fetchPriority="high"
-            className="absolute inset-0 -z-20 h-full w-full object-cover object-center"
-          />
-          <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-emerald-950/90 via-emerald-950/75 to-emerald-950/30" />
-          <div className="relative w-full px-5 py-10 text-left sm:px-10 sm:py-14 lg:px-14 lg:py-16">
-            <div className="max-w-2xl">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs tracking-wide text-white/90 ring-1 ring-white/15">
-                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-                Authentic &amp; Premium Quality
-              </span>
-              <h1 id="hero-title" className="mt-5 max-w-xl text-3xl font-bold leading-tight text-white sm:text-5xl">
-                Discover thoughtful finds for everyday living
-              </h1>
-              <p className="mt-4 max-w-xl text-sm leading-6 text-slate-200 sm:text-base">
-                Browse our curated collection of home, fashion, and organic pantry favorites.
+        <section className="mt-4 overflow-hidden rounded-2xl bg-[#064e3b] shadow-lg sm:mt-6 lg:mt-8" aria-labelledby="hero-title">
+          <div className="grid min-h-[350px] lg:grid-cols-[0.95fr_1.05fr] xl:min-h-[390px]">
+            <div className="flex flex-col justify-center bg-[#fbf8ed] px-6 py-8 sm:px-10 sm:py-9 lg:px-9 xl:px-12">
+              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#a87913] sm:text-[11px]">
+                PREMIUM PRODUCTS <span aria-hidden="true">•</span> HAPPIER LIVING
               </p>
-              <div className="mt-7 flex flex-wrap gap-3">
+              <h1 id="hero-title" className="mt-3 max-w-xl text-[2.4rem] font-bold leading-[0.98] tracking-tight text-[#064e3b] sm:text-5xl xl:text-[3.4rem]">
+                Fresh Finds
+                <span className="block text-[#a87913]">for a Better You</span>
+              </h1>
+              <p className="mt-3 max-w-lg text-sm leading-5 text-slate-700 sm:text-[15px] sm:leading-6">
+                Quality products, trusted brands and everyday essentials — all in one place.
+              </p>
+              <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
                 <a
                   href="#products"
                   onClick={scrollToProducts}
-                  className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-[#D4AF37] px-6 py-3 font-semibold text-emerald-950 transition-colors hover:bg-[#c49f27] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-950"
+                  className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#064e3b] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-emerald-950 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] focus-visible:ring-offset-2"
                 >
-                  Shop products <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  Shop Now <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </a>
-                <a href="#categories" className="inline-flex min-h-12 items-center rounded-lg border border-white/30 px-6 py-3 font-semibold text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                <a href="#categories" className="inline-flex min-h-10 items-center rounded-full px-2 text-sm font-semibold text-[#064e3b] underline decoration-[#064e3b]/30 underline-offset-4 transition-colors hover:decoration-[#064e3b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#064e3b]">
                   Explore categories
                 </a>
               </div>
+              <ul className="mt-5 grid grid-cols-2 gap-x-3 gap-y-2 text-[10px] font-medium text-[#064e3b] sm:grid-cols-3 sm:text-[11px] lg:grid-cols-2 xl:grid-cols-3">
+                {[
+                  { Icon: BadgeCheck, label: 'Authentic Products' },
+                  { Icon: Truck, label: 'Fast & Reliable Delivery' },
+                  { Icon: Heart, label: 'Your Choice, Our Care' },
+                ].map(({ Icon, label }) => (
+                  <li key={label} className="inline-flex items-center gap-1 whitespace-nowrap">
+                    <Icon className="h-3.5 w-3.5 shrink-0 text-[#a87913]" aria-hidden="true" />
+                    {label}
+                  </li>
+                ))}
+              </ul>
             </div>
+            <div className="relative min-h-[235px] bg-[#064e3b] sm:min-h-[300px] lg:min-h-full">
+              <Image
+              src="/images/homedecor.jpeg"
+              alt="A curated display of cozy Anonna Mart home decor and textiles"
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 55vw"
+              className="object-cover object-center"
+              />
+            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#064e3b]/20 via-transparent to-transparent" />
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-3 overflow-hidden rounded-xl bg-[#064e3b] text-white shadow-md sm:mt-4" aria-label="Special offer">
+          <div className="grid lg:min-h-[132px] lg:grid-cols-[0.7fr_1.25fr_1fr]">
+            <div className="relative min-h-[110px] bg-emerald-950 sm:min-h-[135px] lg:min-h-full">
+            <Image
+              src="/images/WhatsApp Image 2026-10-08 at 3.36.13 PM (1).jpeg"
+              alt="Anonna Mart pantry products selected for the special offer"
+              fill
+              sizes="(max-width: 1024px) 100vw, 25vw"
+              className="object-cover object-center"
+            />
+            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-transparent to-[#064e3b]/30 lg:bg-gradient-to-l" />
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-5 py-5 sm:px-7 lg:py-4">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#e5c76c]">Special offer</p>
+              <h2 className="mt-0.5 text-2xl font-bold tracking-tight sm:text-3xl">Up to 30% OFF</h2>
+              <p className="mt-0.5 text-xs text-white/80 sm:text-sm">Quality Products for a Better Everyday Life</p>
+            </div>
+            <a
+              href={offerProducts.length ? '#offers' : '#products'}
+              className="inline-flex min-h-9 items-center gap-2 rounded-full bg-[#D4AF37] px-4 text-xs font-semibold text-[#064e3b] transition-colors hover:bg-[#e2c35a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#064e3b] sm:text-sm"
+            >
+              Shop the Offer <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </a>
+            </div>
+            <ul className="grid gap-2 border-t border-white/15 px-5 py-4 text-xs font-medium text-white/90 sm:grid-cols-2 sm:px-7 sm:text-sm lg:grid-cols-1 lg:content-center lg:border-l lg:border-t-0 lg:px-5 lg:py-3">
+            <li className="inline-flex items-center gap-2"><ShoppingBag className="h-4 w-4 shrink-0 text-[#e5c76c]" aria-hidden="true" />Great Prices on Selected Items</li>
+            <li className="inline-flex items-center gap-2"><Sparkles className="h-4 w-4 shrink-0 text-[#e5c76c]" aria-hidden="true" />Combo Deals Save More</li>
+            <li className="inline-flex items-center gap-2"><ArrowRight className="h-4 w-4 shrink-0 text-[#e5c76c]" aria-hidden="true" />New Arrivals Every Week</li>
+            </ul>
           </div>
         </section>
 
@@ -698,17 +746,77 @@ export function StorefrontHome() {
         </section>
       </main>
 
-      <footer className="mt-8 bg-brand-950 text-white">
-        <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-9 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
-          <div className="sm:col-span-2 lg:col-span-2">
-            <Logo width={166} height={72} className="rounded-md bg-white" />
-            <p className="mt-3 max-w-sm text-sm leading-6 text-white/75">
+      <footer className="relative mt-0 overflow-hidden bg-[#064e3b] text-white">
+        <svg aria-hidden="true" className="pointer-events-none absolute -bottom-2 -left-8 h-44 w-44 opacity-80 sm:h-52 sm:w-52 xl:h-60 xl:w-60" viewBox="0 0 240 240" fill="none">
+          <defs>
+            <linearGradient id="footer-leaf-gradient-left" x1="20" y1="205" x2="140" y2="10" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#245b31" />
+              <stop offset=".48" stopColor="#6f9f43" />
+              <stop offset="1" stopColor="#a9ce6c" />
+            </linearGradient>
+            <linearGradient id="footer-leaf-light-left" x1="20" y1="160" x2="100" y2="20" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#376f36" />
+              <stop offset="1" stopColor="#b6d87c" />
+            </linearGradient>
+          </defs>
+          <path d="M-12 238C25 199 57 156 78 111C97 70 112 36 135 5" stroke="#86b75a" strokeWidth="4" />
+          <path d="M25 187C17 169 9 139 -4 116C17 112 40 120 54 137C68 155 54 175 25 187Z" fill="url(#footer-leaf-gradient-left)" />
+          <path d="M19 191L-35 212M-7 201L-9 218M5 196L8 207" stroke="#c1dd91" strokeOpacity=".75" strokeWidth="1.5" />
+          <path d="M43 165C22 150 -4 151 -30 168C-13 196 17 201 43 165Z" fill="url(#footer-leaf-light-left)" />
+          <path d="M35 170L-27 191M2 182L-1 199M19 176L23 189" stroke="#c1dd91" strokeOpacity=".7" strokeWidth="1.5" />
+          <path d="M64 139C50 115 27 100 -2 99C-3 132 22 155 64 139Z" fill="url(#footer-leaf-gradient-left)" />
+          <path d="M58 140L-9 141M22 141L12 126M39 140L42 154" stroke="#c1dd91" strokeOpacity=".7" strokeWidth="1.5" />
+          <path d="M82 110C73 81 53 59 22 50C11 81 31 109 82 110Z" fill="url(#footer-leaf-light-left)" />
+          <path d="M76 109L5 91M39 99L34 82M56 104L62 118" stroke="#c1dd91" strokeOpacity=".72" strokeWidth="1.5" />
+          <path d="M101 78C99 49 84 23 57 7C39 34 52 64 101 78Z" fill="url(#footer-leaf-gradient-left)" />
+          <path d="M96 77L34 41M62 57L62 39M77 66L87 79" stroke="#c1dd91" strokeOpacity=".72" strokeWidth="1.5" />
+          <path d="M117 47C125 17 119 -12 99 -36C73 -15 78 18 117 47Z" fill="url(#footer-leaf-light-left)" />
+          <path d="M111 45L64 -10M88 19L94 2M99 31L113 27" stroke="#c1dd91" strokeOpacity=".72" strokeWidth="1.5" />
+          <path d="M74 113C48 101 31 80 27 51C56 57 77 79 74 113Z" fill="url(#footer-leaf-gradient-left)" />
+          <path d="M70 108L29 61M51 87L55 72M61 98L72 93" stroke="#c1dd91" strokeOpacity=".68" strokeWidth="1.5" />
+          <path d="M94 81C76 62 69 38 77 9C101 28 111 53 94 81Z" fill="url(#footer-leaf-light-left)" />
+          <path d="M93 75L84 17M89 46L77 37M91 58L105 51" stroke="#c1dd91" strokeOpacity=".68" strokeWidth="1.5" />
+        </svg>
+        <svg aria-hidden="true" className="pointer-events-none absolute -bottom-2 -right-8 h-44 w-44 -scale-x-100 opacity-80 sm:h-52 sm:w-52 xl:h-60 xl:w-60" viewBox="0 0 240 240" fill="none">
+          <defs>
+            <linearGradient id="footer-leaf-gradient-right" x1="20" y1="205" x2="140" y2="10" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#245b31" />
+              <stop offset=".48" stopColor="#6f9f43" />
+              <stop offset="1" stopColor="#a9ce6c" />
+            </linearGradient>
+            <linearGradient id="footer-leaf-light-right" x1="20" y1="160" x2="100" y2="20" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#376f36" />
+              <stop offset="1" stopColor="#b6d87c" />
+            </linearGradient>
+          </defs>
+          <path d="M-12 238C25 199 57 156 78 111C97 70 112 36 135 5" stroke="#86b75a" strokeWidth="4" />
+          <path d="M25 187C17 169 9 139 -4 116C17 112 40 120 54 137C68 155 54 175 25 187Z" fill="url(#footer-leaf-gradient-right)" />
+          <path d="M19 191L-35 212M-7 201L-9 218M5 196L8 207" stroke="#c1dd91" strokeOpacity=".75" strokeWidth="1.5" />
+          <path d="M43 165C22 150 -4 151 -30 168C-13 196 17 201 43 165Z" fill="url(#footer-leaf-light-right)" />
+          <path d="M35 170L-27 191M2 182L-1 199M19 176L23 189" stroke="#c1dd91" strokeOpacity=".7" strokeWidth="1.5" />
+          <path d="M64 139C50 115 27 100 -2 99C-3 132 22 155 64 139Z" fill="url(#footer-leaf-gradient-right)" />
+          <path d="M58 140L-9 141M22 141L12 126M39 140L42 154" stroke="#c1dd91" strokeOpacity=".7" strokeWidth="1.5" />
+          <path d="M82 110C73 81 53 59 22 50C11 81 31 109 82 110Z" fill="url(#footer-leaf-light-right)" />
+          <path d="M76 109L5 91M39 99L34 82M56 104L62 118" stroke="#c1dd91" strokeOpacity=".72" strokeWidth="1.5" />
+          <path d="M101 78C99 49 84 23 57 7C39 34 52 64 101 78Z" fill="url(#footer-leaf-gradient-right)" />
+          <path d="M96 77L34 41M62 57L62 39M77 66L87 79" stroke="#c1dd91" strokeOpacity=".72" strokeWidth="1.5" />
+          <path d="M117 47C125 17 119 -12 99 -36C73 -15 78 18 117 47Z" fill="url(#footer-leaf-light-right)" />
+          <path d="M111 45L64 -10M88 19L94 2M99 31L113 27" stroke="#c1dd91" strokeOpacity=".72" strokeWidth="1.5" />
+          <path d="M74 113C49 103 30 83 24 55C55 62 75 82 74 113Z" fill="url(#footer-leaf-gradient-right)" />
+          <path d="M70 108L29 61M51 87L55 72M61 98L72 93" stroke="#c1dd91" strokeOpacity=".68" strokeWidth="1.5" />
+          <path d="M94 81C77 60 72 37 81 10C104 30 111 54 94 81Z" fill="url(#footer-leaf-light-right)" />
+          <path d="M93 75L84 17M89 46L77 37M91 58L105 51" stroke="#c1dd91" strokeOpacity=".68" strokeWidth="1.5" />
+        </svg>
+        <div className="relative mx-auto grid min-h-[150px] w-full gap-6 px-6 py-5 sm:grid-cols-2 sm:px-8 lg:h-[150px] lg:min-h-0 lg:w-[65%] lg:grid-cols-[2fr_1.25fr_1fr] lg:items-start lg:gap-0 lg:px-0 lg:pt-[26px]">
+          <div className="sm:col-span-2 lg:col-span-1">
+            <Logo width={106} height={52} className="rounded-md bg-white" />
+            <p className="mt-[13px] max-w-sm text-sm leading-5 text-white/90">
               {tagline || 'Thoughtful finds for everyday living.'}
             </p>
           </div>
           <div>
-            <h2 className="font-semibold text-white">Explore</h2>
-            <ul className="mt-3 space-y-2 text-sm text-white/75">
+            <h2 className="text-sm font-semibold text-white">Explore</h2>
+            <ul className="mt-2 space-y-1.5 text-sm text-white/85">
               <li><a href="#categories" className="hover:text-white">Categories</a></li>
               <li><a href="#products" className="hover:text-white">All products</a></li>
               {offerProducts.length > 0 && <li><a href="#offers" className="hover:text-white">Special offers</a></li>}
@@ -717,15 +825,15 @@ export function StorefrontHome() {
           </div>
           {(supportEmail || supportPhone) && (
             <div>
-              <h2 className="font-semibold text-white">Customer support</h2>
-              <div className="mt-3 space-y-2 text-sm text-white/75">
+              <h2 className="text-sm font-semibold text-white">Customer support</h2>
+              <div className="mt-2 space-y-1.5 text-sm text-white/85">
                 {supportEmail && <a className="block break-all hover:text-white" href={`mailto:${supportEmail}`}>{supportEmail}</a>}
                 {supportPhone && <a className="block hover:text-white" href={`tel:${supportPhone.replace(/[^\d+]/g, '')}`}>{supportPhone}</a>}
               </div>
             </div>
           )}
         </div>
-        <div className="border-t border-white/10 px-4 py-4 text-center text-xs text-white/60">
+        <div className="relative flex h-[39px] items-center justify-center border-t border-white/15 px-4 text-center text-[10px] text-white/85">
           © {new Date().getFullYear()} Anonna Mart. All rights reserved.
         </div>
       </footer>
