@@ -33,6 +33,34 @@ const parseFeaturedProductIds = (value, fallback, storageKey) => {
   return fallback;
 };
 
+const reconcileSavedProducts = savedProducts => {
+  const savedProductIds = new Set(savedProducts.map(product => product.id));
+  const currentProductsById = new Map(INITIAL_PRODUCTS.map(product => [product.id, product]));
+
+  const reconciledProducts = savedProducts.map(product => {
+    const currentProduct = currentProductsById.get(product.id);
+    return currentProduct
+      ? { ...product, category: currentProduct.category, image: currentProduct.image }
+      : product;
+  });
+
+  return [
+    ...reconciledProducts,
+    ...INITIAL_PRODUCTS.filter(product => !savedProductIds.has(product.id)),
+  ];
+};
+
+const reconcileSavedBanners = savedBanners => {
+  const currentBannersById = new Map(INITIAL_BANNERS.map(banner => [banner.id, banner]));
+
+  return savedBanners.map(banner => {
+    const currentBanner = currentBannersById.get(banner.id);
+    return currentBanner
+      ? { ...banner, image: currentBanner.image }
+      : banner;
+  });
+};
+
 const DEFAULT_PROFILE = {
   name: 'Anonna Rahman',
   email: 'anonna@anonnamart.com',
@@ -163,8 +191,8 @@ export function StoreProvider({ children }) {
     const savedSettings = safeGetItem('anonna_settings');
     const savedProfile = safeGetItem('anonna_profile');
 
-    if (savedCategories) setCategories(JSON.parse(savedCategories));
-    if (savedProducts) setProducts(JSON.parse(savedProducts));
+    setCategories(INITIAL_CATEGORIES);
+    if (savedProducts) setProducts(reconcileSavedProducts(JSON.parse(savedProducts)));
     const initialFeaturedIds = INITIAL_PRODUCTS.filter(product => product.featured).map(product => product.id);
     const featuredIds = parseFeaturedProductIds(
       savedFeaturedProducts,
@@ -182,7 +210,7 @@ export function StoreProvider({ children }) {
     if (savedOrders) setOrders(JSON.parse(savedOrders));
     if (savedCustomers) setCustomers(JSON.parse(savedCustomers));
     if (savedVendors) setVendors(JSON.parse(savedVendors));
-    if (savedBanners) setBanners(JSON.parse(savedBanners));
+    if (savedBanners) setBanners(reconcileSavedBanners(JSON.parse(savedBanners)));
     if (savedCoupons) setCoupons(JSON.parse(savedCoupons));
     if (savedSettings) setSettings(JSON.parse(savedSettings));
     if (savedProfile) setProfile(JSON.parse(savedProfile));

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
 import {
   formatTaka,
@@ -29,6 +30,18 @@ function ProductImage({
       >
         Anonna Mart
       </div>
+    );
+  }
+
+  if (src.startsWith('/')) {
+    return (
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+        className={className}
+      />
     );
   }
 
@@ -69,7 +82,7 @@ export function ProductCard({
         <button
           type="button"
           onClick={() => onView(product)}
-          className="block aspect-square w-full overflow-hidden bg-slate-100 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-700"
+          className="relative block aspect-square w-full overflow-hidden bg-slate-100 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-700"
           aria-label={`View ${product.name}`}
         >
           <ProductImage

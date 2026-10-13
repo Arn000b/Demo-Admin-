@@ -85,7 +85,7 @@ export function CartDrawer({
                 <button
                   type="button"
                   onClick={() => onViewProduct(product)}
-                  className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700"
+                  className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700"
                   aria-label={`View ${product.name}`}
                 >
                   <ProductThumbnail product={product} className="h-full w-full object-cover" />
@@ -135,7 +135,6 @@ export function CartDrawer({
             <p className="mt-2 text-xs leading-5 text-slate-500">Delivery charges, if applicable, are calculated at checkout.</p>
             <Link
               href="/checkout"
-              onClick={onClose}
               className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-emerald-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2"
             >
               Continue to checkout
@@ -177,7 +176,7 @@ export function WishlistDrawer({
               <button
                 type="button"
                 onClick={() => onViewProduct(product)}
-                className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700"
+                className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700"
                 aria-label={`View ${product.name}`}
               >
                 <ProductThumbnail product={product} className="h-full w-full object-cover" />

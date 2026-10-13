@@ -20,6 +20,7 @@ export interface StorefrontProduct {
 export interface StorefrontCategory {
   id: string;
   name: string;
+  image?: string;
 }
 
 export interface StorefrontBanner {

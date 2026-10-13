@@ -10,6 +10,7 @@ import {
 } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 import {
   BadgeCheck,
   Banknote,
@@ -410,7 +411,8 @@ export function StorefrontHome() {
               {[
                 ['Home', '#top'],
                 ['Categories', '#categories'],
-                ['Products', '#products'],
+                ['All Products', '#products'],
+                ...(featuredProducts.length > 0 ? [['Featured Picks', '#featured']] : []),
                 ...(offerProducts.length > 0 ? [['Offers', '#offers']] : []),
                 ['New Arrivals', '#new-arrivals'],
                 ['About Us', '#about'],
@@ -461,7 +463,8 @@ export function StorefrontHome() {
               {[
                 ['Home', '#top'],
                 ['Categories', '#categories'],
-                ['Products', '#products'],
+                ['All Products', '#products'],
+                ...(featuredProducts.length > 0 ? [['Featured Picks', '#featured']] : []),
                 ...(offerProducts.length ? [['Offers', '#offers']] : []),
                 ['New Arrivals', '#new-arrivals'],
                 ['About Us', '#about'],
@@ -547,16 +550,21 @@ export function StorefrontHome() {
           />
           {categoryCards.length ? (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
-              {categoryCards.slice(0, 8).map(({ id, name, product }) => (
+              {categoryCards.slice(0, 8).map(({ id, name, image }) => (
                 <button
                   type="button"
                   key={id}
                   onClick={() => selectCategory(name)}
                   className="group relative flex aspect-[4/3] min-w-0 items-end overflow-hidden rounded-xl bg-brand-950 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700 focus-visible:ring-offset-2"
                 >
-                  {product?.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={product.image} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover opacity-70 transition-transform duration-300 group-hover:scale-105" />
+                  {image ? (
+                    <Image
+                      src={image}
+                      alt=""
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                      className="object-cover opacity-70 transition-transform duration-300 group-hover:scale-105"
+                    />
                   ) : (
                     <span className="absolute inset-0 bg-gradient-to-br from-brand-800 to-brand-950" />
                   )}
