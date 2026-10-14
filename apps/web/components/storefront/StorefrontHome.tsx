@@ -747,67 +747,39 @@ export function StorefrontHome() {
       </main>
 
       <footer className="relative mt-0 overflow-hidden bg-[#064e3b] text-white">
-        <svg aria-hidden="true" className="pointer-events-none absolute -bottom-2 -left-8 h-44 w-44 opacity-80 sm:h-52 sm:w-52 xl:h-60 xl:w-60" viewBox="0 0 240 240" fill="none">
-          <defs>
-            <linearGradient id="footer-leaf-gradient-left" x1="20" y1="205" x2="140" y2="10" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#245b31" />
-              <stop offset=".48" stopColor="#6f9f43" />
-              <stop offset="1" stopColor="#a9ce6c" />
-            </linearGradient>
-            <linearGradient id="footer-leaf-light-left" x1="20" y1="160" x2="100" y2="20" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#376f36" />
-              <stop offset="1" stopColor="#b6d87c" />
-            </linearGradient>
-          </defs>
-          <path d="M-12 238C25 199 57 156 78 111C97 70 112 36 135 5" stroke="#86b75a" strokeWidth="4" />
-          <path d="M25 187C17 169 9 139 -4 116C17 112 40 120 54 137C68 155 54 175 25 187Z" fill="url(#footer-leaf-gradient-left)" />
-          <path d="M19 191L-35 212M-7 201L-9 218M5 196L8 207" stroke="#c1dd91" strokeOpacity=".75" strokeWidth="1.5" />
-          <path d="M43 165C22 150 -4 151 -30 168C-13 196 17 201 43 165Z" fill="url(#footer-leaf-light-left)" />
-          <path d="M35 170L-27 191M2 182L-1 199M19 176L23 189" stroke="#c1dd91" strokeOpacity=".7" strokeWidth="1.5" />
-          <path d="M64 139C50 115 27 100 -2 99C-3 132 22 155 64 139Z" fill="url(#footer-leaf-gradient-left)" />
-          <path d="M58 140L-9 141M22 141L12 126M39 140L42 154" stroke="#c1dd91" strokeOpacity=".7" strokeWidth="1.5" />
-          <path d="M82 110C73 81 53 59 22 50C11 81 31 109 82 110Z" fill="url(#footer-leaf-light-left)" />
-          <path d="M76 109L5 91M39 99L34 82M56 104L62 118" stroke="#c1dd91" strokeOpacity=".72" strokeWidth="1.5" />
-          <path d="M101 78C99 49 84 23 57 7C39 34 52 64 101 78Z" fill="url(#footer-leaf-gradient-left)" />
-          <path d="M96 77L34 41M62 57L62 39M77 66L87 79" stroke="#c1dd91" strokeOpacity=".72" strokeWidth="1.5" />
-          <path d="M117 47C125 17 119 -12 99 -36C73 -15 78 18 117 47Z" fill="url(#footer-leaf-light-left)" />
-          <path d="M111 45L64 -10M88 19L94 2M99 31L113 27" stroke="#c1dd91" strokeOpacity=".72" strokeWidth="1.5" />
-          <path d="M74 113C48 101 31 80 27 51C56 57 77 79 74 113Z" fill="url(#footer-leaf-gradient-left)" />
-          <path d="M70 108L29 61M51 87L55 72M61 98L72 93" stroke="#c1dd91" strokeOpacity=".68" strokeWidth="1.5" />
-          <path d="M94 81C76 62 69 38 77 9C101 28 111 53 94 81Z" fill="url(#footer-leaf-light-left)" />
-          <path d="M93 75L84 17M89 46L77 37M91 58L105 51" stroke="#c1dd91" strokeOpacity=".68" strokeWidth="1.5" />
-        </svg>
-        <svg aria-hidden="true" className="pointer-events-none absolute -bottom-2 -right-8 h-44 w-44 -scale-x-100 opacity-80 sm:h-52 sm:w-52 xl:h-60 xl:w-60" viewBox="0 0 240 240" fill="none">
-          <defs>
-            <linearGradient id="footer-leaf-gradient-right" x1="20" y1="205" x2="140" y2="10" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#245b31" />
-              <stop offset=".48" stopColor="#6f9f43" />
-              <stop offset="1" stopColor="#a9ce6c" />
-            </linearGradient>
-            <linearGradient id="footer-leaf-light-right" x1="20" y1="160" x2="100" y2="20" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#376f36" />
-              <stop offset="1" stopColor="#b6d87c" />
-            </linearGradient>
-          </defs>
-          <path d="M-12 238C25 199 57 156 78 111C97 70 112 36 135 5" stroke="#86b75a" strokeWidth="4" />
-          <path d="M25 187C17 169 9 139 -4 116C17 112 40 120 54 137C68 155 54 175 25 187Z" fill="url(#footer-leaf-gradient-right)" />
-          <path d="M19 191L-35 212M-7 201L-9 218M5 196L8 207" stroke="#c1dd91" strokeOpacity=".75" strokeWidth="1.5" />
-          <path d="M43 165C22 150 -4 151 -30 168C-13 196 17 201 43 165Z" fill="url(#footer-leaf-light-right)" />
-          <path d="M35 170L-27 191M2 182L-1 199M19 176L23 189" stroke="#c1dd91" strokeOpacity=".7" strokeWidth="1.5" />
-          <path d="M64 139C50 115 27 100 -2 99C-3 132 22 155 64 139Z" fill="url(#footer-leaf-gradient-right)" />
-          <path d="M58 140L-9 141M22 141L12 126M39 140L42 154" stroke="#c1dd91" strokeOpacity=".7" strokeWidth="1.5" />
-          <path d="M82 110C73 81 53 59 22 50C11 81 31 109 82 110Z" fill="url(#footer-leaf-light-right)" />
-          <path d="M76 109L5 91M39 99L34 82M56 104L62 118" stroke="#c1dd91" strokeOpacity=".72" strokeWidth="1.5" />
-          <path d="M101 78C99 49 84 23 57 7C39 34 52 64 101 78Z" fill="url(#footer-leaf-gradient-right)" />
-          <path d="M96 77L34 41M62 57L62 39M77 66L87 79" stroke="#c1dd91" strokeOpacity=".72" strokeWidth="1.5" />
-          <path d="M117 47C125 17 119 -12 99 -36C73 -15 78 18 117 47Z" fill="url(#footer-leaf-light-right)" />
-          <path d="M111 45L64 -10M88 19L94 2M99 31L113 27" stroke="#c1dd91" strokeOpacity=".72" strokeWidth="1.5" />
-          <path d="M74 113C49 103 30 83 24 55C55 62 75 82 74 113Z" fill="url(#footer-leaf-gradient-right)" />
-          <path d="M70 108L29 61M51 87L55 72M61 98L72 93" stroke="#c1dd91" strokeOpacity=".68" strokeWidth="1.5" />
-          <path d="M94 81C77 60 72 37 81 10C104 30 111 54 94 81Z" fill="url(#footer-leaf-light-right)" />
-          <path d="M93 75L84 17M89 46L77 37M91 58L105 51" stroke="#c1dd91" strokeOpacity=".68" strokeWidth="1.5" />
-        </svg>
-        <div className="relative mx-auto grid min-h-[150px] w-full gap-6 px-6 py-5 sm:grid-cols-2 sm:px-8 lg:h-[150px] lg:min-h-0 lg:w-[65%] lg:grid-cols-[2fr_1.25fr_1fr] lg:items-start lg:gap-0 lg:px-0 lg:pt-[26px]">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 z-0 w-20 sm:w-40 lg:w-56">
+          <div className="absolute inset-x-0 bottom-0 h-[190px] sm:top-0 sm:h-full">
+            <Image
+              src="/images/footer-leaves.jpg"
+              alt=""
+              fill
+              sizes="(min-width: 1024px) 224px, (min-width: 640px) 160px, 80px"
+              className="h-full w-full object-cover opacity-80 brightness-125 saturate-150 mix-blend-screen sm:opacity-100"
+              style={{
+                maskImage: 'radial-gradient(ellipse 115% 135% at 0% 80%, #000 0%, #000 32%, transparent 82%)',
+                WebkitMaskImage: 'radial-gradient(ellipse 115% 135% at 0% 80%, #000 0%, #000 32%, transparent 82%)',
+              }}
+            />
+          </div>
+        </div>
+        <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 z-0 w-20 sm:w-40 lg:w-56">
+          <div
+            className="absolute inset-x-0 bottom-0 h-[190px] sm:top-0 sm:h-full"
+            style={{
+              maskImage: 'linear-gradient(to right, transparent 0%, #000 40%)',
+              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, #000 40%)',
+            }}
+          >
+            <Image
+              src="/images/footer-leaves.jpg"
+              alt=""
+              fill
+              sizes="(min-width: 1024px) 224px, (min-width: 640px) 160px, 80px"
+              className="h-full w-full -scale-x-100 object-cover opacity-80 brightness-125 saturate-150 mix-blend-screen sm:opacity-100"
+            />
+          </div>
+        </div>
+        <div className="relative z-10 mx-auto grid min-h-[150px] w-full gap-6 px-6 py-5 sm:grid-cols-2 sm:px-8 lg:h-[150px] lg:min-h-0 lg:w-[65%] lg:grid-cols-[2fr_1.25fr_1fr] lg:items-start lg:gap-0 lg:px-0 lg:pt-[26px]">
           <div className="sm:col-span-2 lg:col-span-1">
             <Logo width={106} height={52} className="rounded-md bg-white" />
             <p className="mt-[13px] max-w-sm text-sm leading-5 text-white/90">
@@ -833,7 +805,7 @@ export function StorefrontHome() {
             </div>
           )}
         </div>
-        <div className="relative flex h-[39px] items-center justify-center border-t border-white/15 px-4 text-center text-[10px] text-white/85">
+        <div className="relative z-10 flex h-[39px] items-center justify-center border-t border-white/15 px-4 text-center text-[10px] text-white/85">
           © {new Date().getFullYear()} Anonna Mart. All rights reserved.
         </div>
       </footer>
