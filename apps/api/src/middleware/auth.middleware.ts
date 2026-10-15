@@ -1,22 +1,58 @@
-import { Context, Next } from 'hono';
+import type { MiddlewareHandler } from 'hono';
+import { getCookie } from 'hono/cookie';
 
-/**
- * Authentication middleware — verify JWT / session before passing to handler.
- * Replace the stub logic below with your real auth provider (e.g., Better Auth, Clerk, Lucia).
- */
-export async function authMiddleware(c: Context, next: Next) {
-  const authHeader = c.req.header('Authorization');
+export type AccountRole = 'customer' | 'admin' | 'vendor';
+export interface Principal {
+  userId: string;
+  email: string;
+  role: AccountRole;
+  customerId: string | null;
+  vendorId: string | null;
+}
+export type AuthEnv = { Variables: { principal: Principal } };
+export type SessionResolver = (token: string) => Promise<Principal | null>;
 
-  if (!authHeader?.startsWith('Bearer ')) {
-    return c.json({ success: false, error: 'Unauthorized' }, 401);
-  }
+export const SESSION_COOKIE = 'anonna_session';
 
-  const token = authHeader.slice(7);
+export function createAuthMiddleware(resolve: SessionResolver): MiddlewareHandler<AuthEnv> {
+  return async (c, next) => {
+    const token = getCookie(c, SESSION_COOKIE);
+    if (!token || token.length > 200) return c.json({ success: false, error: 'Unauthorized' }, 401);
+    const principal = await resolve(token);
+    if (!principal) return c.json({ success: false, error: 'Unauthorized' }, 401);
+    c.set('principal', principal);
+    await next();
+  };
+}
 
-  // TODO: Validate token against your auth provider
-  // const session = await validateToken(token);
-  // if (!session) return c.json({ success: false, error: 'Unauthorized' }, 401);
-  // c.set('user', session.user);
+export function requireRole(...roles: AccountRole[]): MiddlewareHandler<AuthEnv> {
+  return async (c, next) => {
+    if (!roles.includes(c.get('principal').role)) {
+      return c.json({ success: false, error: 'Forbidden' }, 403);
+    }
+    await next();
+  };
+}
 
-  await next();
+export function requireCustomerOwner(param = 'id'): MiddlewareHandler<AuthEnv> {
+  return async (c, next) => {
+    const principal = c.get('principal');
+    if (principal.role !== 'admin' && (principal.role !== 'customer' || principal.customerId !== c.req.param(param))) {
+      return c.json({ success: false, error: 'Forbidden' }, 403);
+    }
+    await next();
+  };
+}
+
+export function requireVendorOwner(resolveVendorId: (resourceId: string) => Promise<string | null>, param = 'id'): MiddlewareHandler<AuthEnv> {
+  return async (c, next) => {
+    const principal = c.get('principal');
+    if (principal.role === 'admin') return next();
+    if (principal.role !== 'vendor' || !principal.vendorId) return c.json({ success: false, error: 'Forbidden' }, 403);
+    const resourceId = c.req.param(param);
+    if (!resourceId) return c.json({ success: false, error: 'Forbidden' }, 403);
+    const ownerId = await resolveVendorId(resourceId);
+    if (ownerId !== principal.vendorId) return c.json({ success: false, error: 'Forbidden' }, 403);
+    await next();
+  };
 }

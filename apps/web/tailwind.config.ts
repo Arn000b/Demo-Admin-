@@ -49,7 +49,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['var(--font-inter)', 'Plus Jakarta Sans', 'Inter', 'sans-serif'],
+        sans: ['ui-sans-serif', 'system-ui', 'sans-serif'],
         display: ['Outfit', 'sans-serif'],
         serif: ['Playfair Display', 'serif'],
         mono: ['var(--font-mono)', 'monospace'],

@@ -7,6 +7,7 @@ import {
   Megaphone,
   BarChart3,
   Settings,
+  Store,
   X,
 } from 'lucide-react';
 import { useStore } from '@/components/providers/StoreContext';
@@ -30,6 +31,10 @@ export function Sidebar({ isOpen, onClose }) {
         { id: 'orders', label: 'Orders', icon: ShoppingBag, badge: pendingOrdersCount > 0 ? `${pendingOrdersCount} New` : null, badgeType: 'warning' },
         { id: 'customers', label: 'Customers', icon: Users, badge: null }
       ]
+    },
+    {
+      title: 'Administration',
+      items: [{ id: 'vendors', label: 'Vendors', icon: Store, badge: null }]
     },
     {
       title: 'Catalog',

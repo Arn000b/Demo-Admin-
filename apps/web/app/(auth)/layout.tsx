@@ -17,7 +17,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       <div className="w-full max-w-md">
         {/* Logo / Brand */}
         <div className="mb-8 text-center">
-          <span className="text-2xl font-bold text-brand-600 dark:text-brand-400">YourBrand</span>
+          <span className="text-2xl font-bold text-emerald-900">ANONNA MART</span>
         </div>
         {children}
       </div>

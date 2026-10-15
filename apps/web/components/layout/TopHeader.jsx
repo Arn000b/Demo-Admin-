@@ -247,9 +247,15 @@ export function TopHeader({ onToggleSidebar }) {
               <div className="border-t border-slate-100 my-1"></div>
 
               <button
-                onClick={() => {
+                onClick={async () => {
                   setIsProfileOpen(false);
-                  window.location.reload();
+                  const api = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
+                  try {
+                    await fetch(`${api}/auth/logout`, { method: 'POST', credentials: 'include' });
+                  } catch {
+                    /* leave protected console if API is unavailable */
+                  }
+                  window.location.href = '/login';
                 }}
                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-rose-50 text-xs font-medium text-rose-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"
               >

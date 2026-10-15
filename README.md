@@ -39,3 +39,6 @@ pnpm lint
 ```
 
 The root package manifest contains orchestration scripts only. Each app and shared package owns its application code and package-specific configuration.
+
+See [the API and operations guide](apps/api/README.md) for endpoint access,
+vendor provisioning, environment setup, and known integration limitations.

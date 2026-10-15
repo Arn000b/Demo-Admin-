@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791870861766,
+      "tag": "0000_luxuriant_loners",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791880000000,
+      "tag": "0001_integrity_constraints",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791880000500,
+      "tag": "0002_watery_lady_ursula",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791880001000,
+      "tag": "0003_auth_and_checks",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791880001500,
+      "tag": "0004_order_reservations",
+      "breakpoints": true
+    }
+  ]
+}

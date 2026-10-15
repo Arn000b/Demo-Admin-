@@ -5,8 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc --noEmit",
+    "build": "tsc --noEmit && esbuild src/index.ts --bundle --platform=node --format=esm --target=node20 --outfile=dist/index.js",
     "lint": "tsc --noEmit",
+    "test": "tsx --test src/lib/pagination.test.ts src/features/auth/auth.test.ts src/features/auth/admin-provisioning.test.ts src/middleware/rate-limit.middleware.test.ts src/features/catalog/catalog.test.ts src/features/commerce/commerce.test.ts src/features/payments/payment.test.ts src/features/payments/refund.rules.test.ts src/features/fulfillment/fulfillment.test.ts src/features/customers/customer.routes.test.ts src/features/administration/administration.test.ts src/routes/health.routes.test.ts",
+    "provision:admin:local": "tsx scripts/provision-local-admin.ts",
+    "dev:rate-limiter": "node scripts/local-rate-limiter.mjs",
+    "test:rate-limiter:local": "node --test scripts/local-rate-limiter.test.mjs",
+    "test:integration:safety": "node --test scripts/integration-safety.test.mjs scripts/postgres-integration-safety.test.mjs",
+    "test:integration:readonly": "node --test scripts/database-readonly.integration.test.mjs",
+    "test:integration:postgres": "node --test scripts/order-reservation.integration.test.mjs",
     "start": "node dist/index.js"
   },
   "dependencies": {
@@ -19,6 +26,7 @@
     "@repo/type": "workspace:*"
   },
   "devDependencies": {
+    "esbuild": "0.19.12",
     "tsx": "^4.16.0",
     "typescript": "^5.5.0",
     "@types/node": "^20.0.0"
