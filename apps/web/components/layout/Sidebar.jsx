@@ -7,8 +7,12 @@ import {
   Megaphone,
   BarChart3,
   Settings,
+<<<<<<< HEAD
   Sparkles,
   ExternalLink,
+=======
+  Store,
+>>>>>>> feature/my-new-code
   X,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -37,6 +41,10 @@ export function Sidebar({ isOpen, onClose }) {
         { id: 'orders', label: 'Orders', icon: ShoppingBag, badge: pendingOrdersCount > 0 ? `${pendingOrdersCount} New` : null, badgeType: 'warning', route: '/admin/orders' },
         { id: 'customers', label: 'Customers', icon: Users, badge: null, route: '/admin/customers' }
       ]
+    },
+    {
+      title: 'Administration',
+      items: [{ id: 'vendors', label: 'Vendors', icon: Store, badge: null }]
     },
     {
       title: 'Catalog',

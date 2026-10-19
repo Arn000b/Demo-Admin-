@@ -40,6 +40,7 @@ pnpm lint
 
 The root package manifest contains orchestration scripts only. Each app and shared package owns its application code and package-specific configuration.
 
+<<<<<<< HEAD
 ## Admin login
 
 Admin routes (`/admin/*` and the legacy `/dashboard`) require a signed, HttpOnly session cookie. Configure these server-only values in `apps/web/.env.local`:
@@ -63,3 +64,7 @@ node -p "require('node:crypto').randomBytes(32).toString('base64url')"
 Add that output as `ADMIN_SESSION_SECRET` in `apps/web/.env.local`, set `ADMIN_USERNAME`, and restart the web app. The local env file is ignored by Git. Do not commit credentials or hashes copied from a real account.
 
 To test the flow, visit `/admin` while logged out and confirm you are redirected to `/admin/login`. Sign in with the configured username and password; confirm the browser receives an `anonna_admin_session` cookie marked HttpOnly and can open `/admin`. Use **View Public Site** to visit the storefront while keeping the admin session active; the storefront profile menu should identify the administrator and link back to `/admin`. Use the red **Logout** action in the admin profile dropdown to end the admin session, return to the storefront homepage, and confirm you cannot reopen `/admin` without signing in again. The login endpoint never stores the raw password and returns the same invalid-credentials message for an unknown username or incorrect password.
+=======
+See [the API and operations guide](apps/api/README.md) for endpoint access,
+vendor provisioning, environment setup, and known integration limitations.
+>>>>>>> feature/my-new-code

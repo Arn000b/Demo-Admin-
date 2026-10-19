@@ -5,7 +5,10 @@ export default defineConfig({
   out: './migrations',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.DATABASE_URL!,
+    // Generation reads the schema and does not connect. The local default keeps
+    // `db:generate` usable without requiring a real credential in the environment.
+    url:
+      process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5432/anonna_mart_dev',
   },
   verbose: true,
   strict: true,

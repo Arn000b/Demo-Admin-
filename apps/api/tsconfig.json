@@ -10,9 +10,10 @@
     "paths": {
       "@repo/db": ["../../packages/db/src/index.ts"],
       "@repo/db/schema": ["../../packages/db/src/schema/index.ts"],
+      "@repo/db/local-client": ["../../packages/db/src/local-client.ts"],
       "@repo/type": ["../../packages/type/src/index.ts"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "scripts"],
   "exclude": ["node_modules", "dist"]
 }

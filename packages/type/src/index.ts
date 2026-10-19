@@ -42,7 +42,7 @@ export interface AuthSession {
 
 // ─── Customer ─────────────────────────────────────────────────────────────────
 
-export type CustomerStatus = 'active' | 'inactive' | 'pending';
+export type CustomerStatus = 'active' | 'inactive' | 'pending' | 'suspended' | 'closed';
 
 export interface Customer {
   id: string;
