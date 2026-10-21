@@ -36,13 +36,15 @@ export interface StorefrontBanner {
 export interface CartLine {
   productId: string;
   quantity: number;
+  variantId?: string;
+  cartItemId?: string;
 }
 
 export function hasValidDiscount(product: StorefrontProduct): boolean {
   return Boolean(
     product.discountActive &&
-      typeof product.originalPrice === 'number' &&
-      product.originalPrice > product.price,
+    typeof product.originalPrice === 'number' &&
+    product.originalPrice > product.price
   );
 }
 

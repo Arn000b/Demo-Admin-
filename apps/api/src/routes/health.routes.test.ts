@@ -5,10 +5,13 @@ import { createHealthRoutes } from './health.routes';
 
 test('liveness remains healthy without checking database readiness', async () => {
   let readinessChecks = 0;
-  const app = new Hono().route('/', createHealthRoutes(async () => {
-    readinessChecks += 1;
-    return true;
-  }));
+  const app = new Hono().route(
+    '/',
+    createHealthRoutes(async () => {
+      readinessChecks += 1;
+      return true;
+    })
+  );
 
   const response = await app.request('/health');
   assert.equal(response.status, 200);
@@ -16,8 +19,25 @@ test('liveness remains healthy without checking database readiness', async () =>
   assert.equal(readinessChecks, 0);
 });
 
+test('liveness reports auth limiter status without exposing backend details', async () => {
+  const app = new Hono().route(
+    '/',
+    createHealthRoutes(
+      async () => true,
+      () => 'local-fallback'
+    )
+  );
+  const response = await app.request('/health');
+
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).authRateLimiter, 'local-fallback');
+});
+
 test('readiness returns success when the database check succeeds', async () => {
-  const app = new Hono().route('/', createHealthRoutes(async () => true));
+  const app = new Hono().route(
+    '/',
+    createHealthRoutes(async () => true)
+  );
   const response = await app.request('/ready');
 
   assert.equal(response.status, 200);
@@ -25,10 +45,16 @@ test('readiness returns success when the database check succeeds', async () => {
 });
 
 test('readiness fails closed and hides database errors', async () => {
-  const unavailable = new Hono().route('/', createHealthRoutes(async () => false));
-  const failed = new Hono().route('/', createHealthRoutes(async () => {
-    throw new Error('postgresql://secret:password@host/database');
-  }));
+  const unavailable = new Hono().route(
+    '/',
+    createHealthRoutes(async () => false)
+  );
+  const failed = new Hono().route(
+    '/',
+    createHealthRoutes(async () => {
+      throw new Error('postgresql://secret:password@host/database');
+    })
+  );
 
   for (const app of [unavailable, failed]) {
     const response = await app.request('/ready');

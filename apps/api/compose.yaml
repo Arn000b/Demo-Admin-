@@ -1,0 +1,29 @@
+services:
+  api:
+    image: ${API_IMAGE:?Set API_IMAGE to an immutable API image tag}
+    command: ["pnpm", "--filter", "@repo/api", "start"]
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+    ports:
+      - "${PORT:-4000}:4000"
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+  background-worker:
+    image: ${API_IMAGE:?Set API_IMAGE to an immutable API image tag}
+    command: ["pnpm", "--filter", "@repo/api", "payments:worker"]
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PAYMENT_WORKER_INTERVAL_MS: ${PAYMENT_WORKER_INTERVAL_MS:-5000}
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 30s

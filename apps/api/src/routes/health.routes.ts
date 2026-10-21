@@ -2,14 +2,20 @@ import { Hono } from 'hono';
 
 export type DatabaseReadinessCheck = () => Promise<boolean>;
 
-export function createHealthRoutes(checkDatabase: DatabaseReadinessCheck) {
+export function createHealthRoutes(
+  checkDatabase: DatabaseReadinessCheck,
+  getAuthRateLimiterStatus: () => 'unverified' | 'shared' | 'local-fallback' = () => 'unverified'
+) {
   const routes = new Hono();
 
-  routes.get('/health', (c) => c.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version ?? '0.0.0',
-  }));
+  routes.get('/health', (c) =>
+    c.json({
+      status: 'ok',
+      authRateLimiter: getAuthRateLimiterStatus(),
+      timestamp: new Date().toISOString(),
+      version: process.env.npm_package_version ?? '0.0.0',
+    })
+  );
 
   routes.get('/ready', async (c) => {
     try {

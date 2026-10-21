@@ -1,6 +1,11 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { createAuthMiddleware, type AuthEnv } from '../../middleware/auth.middleware';
+import {
+  configuredTrustedProxyIps,
+  createRateLimitMiddleware,
+  type SharedRateLimitStore,
+} from '../../middleware/rate-limit.middleware';
 import type { AuthService } from '../auth/auth.types';
 import type { AdministrationService } from './administration.service';
 import { paginationSchema } from '../../lib/pagination';
@@ -8,70 +13,381 @@ import { paginationSchema } from '../../lib/pagination';
 const uuid = z.string().uuid();
 const page = paginationSchema;
 const status = z.enum(['pending', 'active', 'suspended', 'closed']);
-const commission = z.string().regex(/^(?:0|[1-9]\d?)(?:\.\d{1,2})?$/).refine((n) => Number(n) <= 100);
+const commission = z
+  .string()
+  .regex(/^(?:0|[1-9]\d?)(?:\.\d{1,2})?$/)
+  .refine((n) => Number(n) <= 100);
 const vendorFields = {
-  name: z.string().trim().min(1).max(200), email: z.string().trim().email().max(320).transform((email) => email.toLowerCase()),
-  phone: z.string().trim().max(32).nullable().optional(), address: z.string().trim().max(10_000).nullable().optional(), commissionRate: commission.optional(),
+  name: z.string().trim().min(1).max(200),
+  email: z
+    .string()
+    .trim()
+    .email()
+    .max(320)
+    .transform((email) => email.toLowerCase()),
+  phone: z.string().trim().max(32).nullable().optional(),
+  address: z.string().trim().max(10_000).nullable().optional(),
+  commissionRate: commission.optional(),
 };
 const createVendor = z.object(vendorFields).strict();
-const updateVendor = z.object({ ...vendorFields, status }).partial().strict();
-const invalid = (c: { json: (body: object, code?: 400) => Response }) => c.json({ success: false, error: 'Invalid request data' }, 400);
+const updateVendor = z
+  .object({ ...vendorFields, status })
+  .partial()
+  .strict();
+const vendorApplication = z
+  .object({
+    name: vendorFields.name,
+    email: vendorFields.email,
+    phone: vendorFields.phone,
+    address: vendorFields.address,
+  })
+  .strict();
+const payoutRequest = z
+  .object({
+    amount: z
+      .string()
+      .regex(/^(?:0|[1-9]\d{0,9})\.\d{2}$/)
+      .refine((amount) => Number(amount) > 0),
+    idempotencyKey: z.string().trim().min(8).max(100),
+    memo: z.string().trim().max(500).optional(),
+  })
+  .strict();
+const couponSchema = z
+  .object({
+    code: z.string().trim().min(2).max(80),
+    discountType: z.enum(['fixed', 'percentage']),
+    discountValue: z
+      .string()
+      .regex(/^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/)
+      .refine((v) => Number(v) > 0),
+    minOrderAmount: z
+      .string()
+      .regex(/^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/)
+      .optional(),
+    expiryDate: z
+      .string()
+      .datetime()
+      .transform((s) => new Date(s))
+      .nullable()
+      .optional(),
+    usageLimit: z.number().int().positive().nullable().optional(),
+    isActive: z.boolean().optional(),
+  })
+  .strict();
+const updateCouponSchema = z
+  .object({
+    code: z.string().trim().min(2).max(80).optional(),
+    discountType: z.enum(['fixed', 'percentage']).optional(),
+    discountValue: z
+      .string()
+      .regex(/^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/)
+      .refine((v) => Number(v) > 0)
+      .optional(),
+    minOrderAmount: z
+      .string()
+      .regex(/^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/)
+      .optional(),
+    expiryDate: z
+      .string()
+      .datetime()
+      .transform((s) => new Date(s))
+      .nullable()
+      .optional(),
+    usageLimit: z.number().int().positive().nullable().optional(),
+    isActive: z.boolean().optional(),
+  })
+  .strict();
 
-export function createAdministrationRoutes(service: AdministrationService, authService: AuthService) {
+const invalid = (c: { json: (body: object, code?: 400) => Response }) =>
+  c.json({ success: false, error: 'Invalid request data' }, 400);
+
+export function createAdministrationRoutes(
+  service: AdministrationService,
+  authService: AuthService,
+  rateLimitStore: SharedRateLimitStore
+) {
   const auth = createAuthMiddleware((token) => authService.resolveSession(token));
-  const admin = new Hono<AuthEnv>(); admin.use('*', auth);
-  admin.use('*', async (c, next) => c.get('principal').role === 'admin' ? next() : c.json({ success: false, error: 'Forbidden' }, 403));
+  const trustedProxyIps = configuredTrustedProxyIps();
+  const admin = new Hono<AuthEnv>();
+  admin.use('*', auth);
+  admin.use('*', async (c, next) =>
+    c.get('principal').role === 'admin'
+      ? next()
+      : c.json({ success: false, error: 'Forbidden' }, 403)
+  );
   admin.get('/vendors', async (c) => {
-    const parsed = page.extend({ q: z.string().trim().max(120).optional(), status: status.optional() }).safeParse(c.req.query());
+    const parsed = page
+      .extend({ q: z.string().trim().max(120).optional(), status: status.optional() })
+      .safeParse(c.req.query());
     if (!parsed.success) return invalid(c);
     return c.json({ success: true, ...(await service.listVendors(parsed.data)) });
   });
   admin.post('/vendors', async (c) => {
-    const parsed = createVendor.safeParse(await c.req.json().catch(() => null)); if (!parsed.success) return invalid(c);
+    const parsed = createVendor.safeParse(await c.req.json().catch(() => null));
+    if (!parsed.success) return invalid(c);
     return c.json({ success: true, data: await service.createVendor(parsed.data) }, 201);
   });
   admin.patch('/vendors/:id', async (c) => {
     if (!uuid.safeParse(c.req.param('id')).success) return invalid(c);
-    const parsed = updateVendor.safeParse(await c.req.json().catch(() => null)); if (!parsed.success || !Object.keys(parsed.data).length) return invalid(c);
+    const parsed = updateVendor.safeParse(await c.req.json().catch(() => null));
+    if (!parsed.success || !Object.keys(parsed.data).length) return invalid(c);
     const row = await service.updateVendor(c.req.param('id'), parsed.data);
-    return row ? c.json({ success: true, data: row }) : c.json({ success: false, error: 'Vendor not found' }, 404);
+    return row
+      ? c.json({ success: true, data: row })
+      : c.json({ success: false, error: 'Vendor not found' }, 404);
   });
   admin.put('/vendors/:id/account', async (c) => {
     if (!uuid.safeParse(c.req.param('id')).success) return invalid(c);
-    const parsed = z.object({ email: z.string().trim().email().max(320).transform((email) => email.toLowerCase()) }).strict().safeParse(await c.req.json().catch(() => null));
+    const parsed = z
+      .object({
+        email: z
+          .string()
+          .trim()
+          .email()
+          .max(320)
+          .transform((email) => email.toLowerCase()),
+      })
+      .strict()
+      .safeParse(await c.req.json().catch(() => null));
     if (!parsed.success) return invalid(c);
     const row = await service.linkVendorAccount(c.req.param('id'), parsed.data.email);
-    return row ? c.json({ success: true, data: row }) : c.json({ success: false, error: 'Vendor not found' }, 404);
+    return row
+      ? c.json({ success: true, data: row })
+      : c.json({ success: false, error: 'Vendor not found' }, 404);
   });
-  admin.get('/overview', async (c) => c.json({ success: true, data: await service.adminOverview() }));
-  admin.get('/orders', async (c) => {
-    const parsed = page.extend({ status: z.enum(['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']).optional() }).safeParse(c.req.query());
+  admin.get('/vendors/:id/ledger', async (c) => {
+    if (!uuid.safeParse(c.req.param('id')).success) return invalid(c);
+    const parsed = page.safeParse(c.req.query());
     if (!parsed.success) return invalid(c);
-    return c.json({ success: true, ...(await service.listAdminOrders(parsed.data.page, parsed.data.pageSize, parsed.data.status)) });
+    return c.json({
+      success: true,
+      ...(await service.vendorLedger(c.req.param('id'), parsed.data.page, parsed.data.pageSize)),
+    });
+  });
+  admin.post('/vendors/:id/payouts', async (c) => {
+    if (!uuid.safeParse(c.req.param('id')).success) return invalid(c);
+    const parsed = payoutRequest.safeParse(await c.req.json().catch(() => null));
+    if (!parsed.success) return invalid(c);
+    const entry = await service.recordVendorPayout({
+      ...parsed.data,
+      vendorId: c.req.param('id'),
+      recordedByUserId: c.get('principal').userId,
+    });
+    return c.json({ success: true, data: entry }, 201);
+  });
+  admin.get('/overview', async (c) =>
+    c.json({ success: true, data: await service.adminOverview() })
+  );
+  admin.get('/analytics', async (c) =>
+    c.json({ success: true, data: await service.adminAnalytics() })
+  );
+  admin.get('/orders', async (c) => {
+    const parsed = page
+      .extend({
+        status: z
+          .enum([
+            'pending',
+            'confirmed',
+            'processing',
+            'shipped',
+            'delivered',
+            'cancelled',
+            'refunded',
+          ])
+          .optional(),
+      })
+      .safeParse(c.req.query());
+    if (!parsed.success) return invalid(c);
+    return c.json({
+      success: true,
+      ...(await service.listAdminOrders(
+        parsed.data.page,
+        parsed.data.pageSize,
+        parsed.data.status
+      )),
+    });
   });
   admin.get('/orders/:id', async (c) => {
     if (!uuid.safeParse(c.req.param('id')).success) return invalid(c);
     const row = await service.getAdminOrder(c.req.param('id'));
-    return row ? c.json({ success: true, data: row }) : c.json({ success: false, error: 'Order not found' }, 404);
+    return row
+      ? c.json({ success: true, data: row })
+      : c.json({ success: false, error: 'Order not found' }, 404);
   });
 
-  const vendor = new Hono<AuthEnv>(); vendor.use('*', auth);
-  vendor.use('*', async (c, next) => {
-    const p = c.get('principal'); return p.role === 'vendor' && p.vendorId ? next() : c.json({ success: false, error: 'Forbidden' }, 403);
+  admin.get('/coupons', async (c) => {
+    const parsed = page
+      .extend({
+        q: z.string().trim().max(100).optional(),
+        isActive: z
+          .enum(['true', 'false'])
+          .transform((v) => v === 'true')
+          .optional(),
+      })
+      .safeParse(c.req.query());
+    if (!parsed.success) return invalid(c);
+    return c.json({
+      success: true,
+      ...(await service.listCoupons(
+        parsed.data.page,
+        parsed.data.pageSize,
+        parsed.data.q,
+        parsed.data.isActive
+      )),
+    });
   });
-  vendor.get('/summary', async (c) => c.json({ success: true, data: await service.vendorSummary(c.get('principal').vendorId!) }));
+  admin.post('/coupons', async (c) => {
+    const parsed = couponSchema.safeParse(await c.req.json().catch(() => null));
+    if (!parsed.success) return invalid(c);
+    const row = await service.createCoupon(parsed.data);
+    return c.json({ success: true, data: row }, 201);
+  });
+  admin.patch('/coupons/:id', async (c) => {
+    if (!uuid.safeParse(c.req.param('id')).success) return invalid(c);
+    const parsed = updateCouponSchema.safeParse(await c.req.json().catch(() => null));
+    if (!parsed.success || !Object.keys(parsed.data).length) return invalid(c);
+    const row = await service.updateCoupon(c.req.param('id'), parsed.data);
+    return row
+      ? c.json({ success: true, data: row })
+      : c.json({ success: false, error: 'Coupon not found' }, 404);
+  });
+  admin.delete('/coupons/:id', async (c) => {
+    if (!uuid.safeParse(c.req.param('id')).success) return invalid(c);
+    const row = await service.deleteCoupon(c.req.param('id'));
+    return row
+      ? c.json({ success: true, data: row })
+      : c.json({ success: false, error: 'Coupon not found' }, 404);
+  });
+
+  admin.get('/settings', async (c) =>
+    c.json({ success: true, data: await service.getStoreSettings() })
+  );
+  admin.put('/settings', async (c) => {
+    const settingsSchema = z
+      .object({
+        storeName: z.string().trim().min(1).max(200).optional(),
+        tagline: z.string().trim().max(300).optional(),
+        currency: z.string().trim().max(20).optional(),
+        currencySymbol: z.string().trim().max(10).optional(),
+        supportEmail: z.string().trim().email().max(320).optional(),
+        supportPhone: z.string().trim().max(40).optional(),
+        address: z.string().trim().max(500).optional(),
+        vatPercent: z.number().min(0).max(100).optional(),
+        defaultDeliveryFeeDhaka: z.number().min(0).optional(),
+        defaultDeliveryFeeOutside: z.number().min(0).optional(),
+        freeShippingThreshold: z.number().min(0).optional(),
+        bkash: z.boolean().optional(),
+        nagad: z.boolean().optional(),
+        sslcommerz: z.boolean().optional(),
+        cod: z.boolean().optional(),
+      })
+      .strict();
+    const parsed = settingsSchema.safeParse(await c.req.json().catch(() => null));
+    if (!parsed.success) return invalid(c);
+    const updated = await service.updateStoreSettings(parsed.data);
+    return c.json({ success: true, data: updated });
+  });
+
+  admin.get('/featured-products', async (c) =>
+    c.json({ success: true, data: await service.getFeaturedProductIds() })
+  );
+  admin.put('/featured-products', async (c) => {
+    const parsed = z
+      .object({ productIds: z.array(z.string().uuid()) })
+      .strict()
+      .safeParse(await c.req.json().catch(() => null));
+    if (!parsed.success) return invalid(c);
+    const updated = await service.setFeaturedProductIds(parsed.data.productIds);
+    return c.json({ success: true, data: updated });
+  });
+
+  const vendor = new Hono<AuthEnv>();
+  vendor.use('*', auth);
+  vendor.use('*', async (c, next) => {
+    const p = c.get('principal');
+    return p.role === 'vendor' && p.vendorId
+      ? next()
+      : c.json({ success: false, error: 'Forbidden' }, 403);
+  });
+  vendor.get('/summary', async (c) =>
+    c.json({ success: true, data: await service.vendorSummary(c.get('principal').vendorId!) })
+  );
   vendor.get('/products', async (c) => {
-    const parsed = page.safeParse(c.req.query()); if (!parsed.success) return invalid(c);
-    return c.json({ success: true, ...(await service.vendorProducts(c.get('principal').vendorId!, parsed.data.page, parsed.data.pageSize)) });
+    const parsed = page.safeParse(c.req.query());
+    if (!parsed.success) return invalid(c);
+    return c.json({
+      success: true,
+      ...(await service.vendorProducts(
+        c.get('principal').vendorId!,
+        parsed.data.page,
+        parsed.data.pageSize
+      )),
+    });
   });
   vendor.get('/orders', async (c) => {
-    const parsed = page.extend({ status: z.enum(['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']).optional() }).safeParse(c.req.query());
+    const parsed = page
+      .extend({
+        status: z
+          .enum([
+            'pending',
+            'confirmed',
+            'processing',
+            'shipped',
+            'delivered',
+            'cancelled',
+            'refunded',
+          ])
+          .optional(),
+      })
+      .safeParse(c.req.query());
     if (!parsed.success) return invalid(c);
-    return c.json({ success: true, ...(await service.vendorOrderLines(c.get('principal').vendorId!, parsed.data.page, parsed.data.pageSize, parsed.data.status)) });
+    return c.json({
+      success: true,
+      ...(await service.vendorOrderLines(
+        c.get('principal').vendorId!,
+        parsed.data.page,
+        parsed.data.pageSize,
+        parsed.data.status
+      )),
+    });
   });
   vendor.get('/shipments', async (c) => {
-    const parsed = page.safeParse(c.req.query()); if (!parsed.success) return invalid(c);
-    return c.json({ success: true, ...(await service.vendorShipmentLines(c.get('principal').vendorId!, parsed.data.page, parsed.data.pageSize)) });
+    const parsed = page.safeParse(c.req.query());
+    if (!parsed.success) return invalid(c);
+    return c.json({
+      success: true,
+      ...(await service.vendorShipmentLines(
+        c.get('principal').vendorId!,
+        parsed.data.page,
+        parsed.data.pageSize
+      )),
+    });
   });
-  return { admin, vendor };
+  vendor.get('/ledger', async (c) => {
+    const parsed = page.safeParse(c.req.query());
+    if (!parsed.success) return invalid(c);
+    return c.json({
+      success: true,
+      ...(await service.vendorLedger(
+        c.get('principal').vendorId!,
+        parsed.data.page,
+        parsed.data.pageSize
+      )),
+    });
+  });
+  const vendorApplications = new Hono();
+  vendorApplications.post(
+    '/',
+    createRateLimitMiddleware(rateLimitStore, 5, 60 * 60 * 1000, 'vendor:application', {
+      trustedProxyIps,
+    }),
+    async (c) => {
+      const parsed = vendorApplication.safeParse(await c.req.json().catch(() => null));
+      if (!parsed.success)
+        return c.json({ success: false, error: 'Invalid vendor application' }, 400);
+      const application = await service.applyAsVendor(parsed.data);
+      return c.json({ success: true, data: application }, 202);
+    }
+  );
+  return { admin, vendor, vendorApplications };
 }

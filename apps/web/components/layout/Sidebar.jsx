@@ -7,12 +7,9 @@ import {
   Megaphone,
   BarChart3,
   Settings,
-<<<<<<< HEAD
   Sparkles,
   ExternalLink,
-=======
   Store,
->>>>>>> feature/my-new-code
   X,
 } from 'lucide-react';
 import Link from 'next/link';

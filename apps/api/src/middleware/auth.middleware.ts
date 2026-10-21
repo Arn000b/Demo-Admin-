@@ -25,6 +25,23 @@ export function createAuthMiddleware(resolve: SessionResolver): MiddlewareHandle
   };
 }
 
+export function createOptionalAuthMiddleware(
+  resolve: SessionResolver
+): MiddlewareHandler<{ Variables: { principal?: Principal } }> {
+  return async (c, next) => {
+    const token = getCookie(c, SESSION_COOKIE);
+    if (token && token.length <= 200) {
+      try {
+        const principal = await resolve(token);
+        if (principal) c.set('principal', principal);
+      } catch {
+        // guest request proceeds without principal
+      }
+    }
+    await next();
+  };
+}
+
 export function requireRole(...roles: AccountRole[]): MiddlewareHandler<AuthEnv> {
   return async (c, next) => {
     if (!roles.includes(c.get('principal').role)) {
@@ -37,18 +54,25 @@ export function requireRole(...roles: AccountRole[]): MiddlewareHandler<AuthEnv>
 export function requireCustomerOwner(param = 'id'): MiddlewareHandler<AuthEnv> {
   return async (c, next) => {
     const principal = c.get('principal');
-    if (principal.role !== 'admin' && (principal.role !== 'customer' || principal.customerId !== c.req.param(param))) {
+    if (
+      principal.role !== 'admin' &&
+      (principal.role !== 'customer' || principal.customerId !== c.req.param(param))
+    ) {
       return c.json({ success: false, error: 'Forbidden' }, 403);
     }
     await next();
   };
 }
 
-export function requireVendorOwner(resolveVendorId: (resourceId: string) => Promise<string | null>, param = 'id'): MiddlewareHandler<AuthEnv> {
+export function requireVendorOwner(
+  resolveVendorId: (resourceId: string) => Promise<string | null>,
+  param = 'id'
+): MiddlewareHandler<AuthEnv> {
   return async (c, next) => {
     const principal = c.get('principal');
     if (principal.role === 'admin') return next();
-    if (principal.role !== 'vendor' || !principal.vendorId) return c.json({ success: false, error: 'Forbidden' }, 403);
+    if (principal.role !== 'vendor' || !principal.vendorId)
+      return c.json({ success: false, error: 'Forbidden' }, 403);
     const resourceId = c.req.param(param);
     if (!resourceId) return c.json({ success: false, error: 'Forbidden' }, 403);
     const ownerId = await resolveVendorId(resourceId);

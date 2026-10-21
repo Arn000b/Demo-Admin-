@@ -10,6 +10,8 @@ import {
   INITIAL_COUPONS,
   STORE_SETTINGS
 } from '@/lib/data/mockData';
+import { fetchCategories, fetchProducts } from '@/lib/api/products';
+import { createAdminCoupon, updateAdminCoupon, deleteAdminCoupon, fetchAdminCoupons, fetchAdminSettings, updateAdminSettings, fetchFeaturedProductIds, updateFeaturedProductIds } from '@/lib/api/admin';
 
 const StoreContext = createContext();
 
@@ -215,11 +217,115 @@ export function StoreProvider({ children }) {
     if (savedSettings) setSettings(JSON.parse(savedSettings));
     if (savedProfile) setProfile(JSON.parse(savedProfile));
     setHasHydrated(true);
+
+    // Fetch dynamic categories and products from the API backend
+    let isCancelled = false;
+    async function syncCatalogFromBackend() {
+      try {
+        const [categoriesResult, productsResult] = await Promise.allSettled([
+          fetchCategories({ pageSize: 100 }),
+          fetchProducts({ pageSize: 100 }),
+        ]);
+        if (isCancelled) return;
+
+        let categoryNameMap = {};
+        if (categoriesResult.status === 'fulfilled' && categoriesResult.value.data.length > 0) {
+          const apiCats = categoriesResult.value.data.map(cat => ({
+            id: cat.id,
+            name: cat.name,
+            description: cat.description || '',
+            normalizedName: cat.name.toLowerCase(),
+            createdAt: cat.createdAt,
+            updatedAt: cat.updatedAt,
+          }));
+          categoryNameMap = Object.fromEntries(apiCats.map(c => [c.id, c.name]));
+          setCategories(prev => {
+            const existingIds = new Set(prev.map(c => c.id));
+            const additions = apiCats.filter(c => !existingIds.has(c.id));
+            return additions.length > 0 ? [...prev, ...additions] : prev;
+          });
+        }
+
+        try {
+          const [settingsRes, featuredRes] = await Promise.allSettled([
+            fetchAdminSettings(),
+            fetchFeaturedProductIds(),
+          ]);
+          if (!isCancelled && settingsRes.status === 'fulfilled' && settingsRes.value?.data) {
+            setSettings(prev => ({ ...prev, ...settingsRes.value.data }));
+          }
+          if (!isCancelled && featuredRes.status === 'fulfilled' && Array.isArray(featuredRes.value?.data) && featuredRes.value.data.length > 0) {
+            setFeaturedProductIds(featuredRes.value.data);
+          }
+        } catch {
+          // Keep local fallback
+        }
+
+        try {
+          const couponsResult = await fetchAdminCoupons(1, 50);
+          if (!isCancelled && couponsResult?.data && couponsResult.data.length > 0) {
+            const apiCoupons = couponsResult.data.map(c => ({
+              id: c.id,
+              code: c.code,
+              type: c.discountType,
+              value: Number(c.discountValue),
+              minOrderValue: Number(c.minOrderAmount),
+              expiryDate: c.expiryDate ? c.expiryDate.split('T')[0] : '2026-12-31',
+              totalUses: c.timesUsed || 0,
+              maxUsageLimit: c.usageLimit || 100,
+              status: c.isActive ? 'Active' : 'Disabled',
+            }));
+            setCoupons(prev => {
+              const existingCodes = new Set(prev.map(p => p.code));
+              const additions = apiCoupons.filter(c => !existingCodes.has(c.code));
+              return additions.length > 0 ? [...additions, ...prev] : prev;
+            });
+          }
+        } catch {
+          // Keep local coupons
+        }
+
+        if (productsResult.status === 'fulfilled' && productsResult.value.data.length > 0) {
+          const apiProds = productsResult.value.data.map(prod => ({
+            id: prod.id,
+            name: prod.name,
+            category: categoryNameMap[prod.categoryId] || 'Handloom',
+            description: prod.description || '',
+            image: (prod.images && prod.images[0]) || 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80',
+            price: 1500,
+            originalPrice: 1800,
+            stock: 25,
+            salesCount: 0,
+            rating: 5.0,
+            reviewsCount: 0,
+            featured: false,
+            discountActive: true,
+            createdAt: prod.createdAt,
+          }));
+          setProducts(prev => {
+            const existingIds = new Set(prev.map(p => p.id));
+            const additions = apiProds.filter(p => !existingIds.has(p.id));
+            return additions.length > 0 ? [...additions, ...prev] : prev;
+          });
+        }
+      } catch {
+        // Fall back cleanly to initialized catalog
+      }
+    }
+    syncCatalogFromBackend();
+
+    return () => {
+      isCancelled = true;
+    };
   }, []);
 
   useEffect(() => {
     if (!hasHydrated) return;
     safeSetItem('anonna_featured_products', JSON.stringify(featuredProductIds));
+    const uuidIds = featuredProductIds.filter(id => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id));
+    if (uuidIds.length > 0) {
+      updateFeaturedProductIds(uuidIds).catch(() => {});
+    }
   }, [featuredProductIds, hasHydrated]);
 
   useEffect(() => {
@@ -501,31 +607,60 @@ export function StoreProvider({ children }) {
   };
 
   // Coupon Actions
-  const addCoupon = (couponData) => {
+  const addCoupon = async (couponData) => {
+    const tempId = `CPN-${Date.now().toString().slice(-4)}`;
     const newCoupon = {
       ...couponData,
-      id: `CPN-${Date.now().toString().slice(-4)}`,
+      id: tempId,
       totalUses: 0,
       status: 'Active'
     };
     setCoupons(prev => [newCoupon, ...prev]);
     showToast('Coupon Created', `Code "${newCoupon.code}" is ready to use!`);
+    try {
+      const res = await createAdminCoupon({
+        code: couponData.code,
+        discountType: couponData.type || 'percentage',
+        discountValue: Number(couponData.value).toFixed(2),
+        minOrderAmount: Number(couponData.minOrderValue || 0).toFixed(2),
+        expiryDate: couponData.expiryDate ? new Date(couponData.expiryDate).toISOString() : null,
+        usageLimit: couponData.maxUsageLimit ? Number(couponData.maxUsageLimit) : null,
+        isActive: true,
+      });
+      if (res?.data?.id) {
+        setCoupons(prev => prev.map(c => c.id === tempId ? { ...c, id: res.data.id } : c));
+      }
+    } catch {
+      // Retain optimistic local state
+    }
   };
 
-  const deleteCoupon = (id) => {
+  const deleteCoupon = async (id) => {
     setCoupons(prev => prev.filter(c => c.id !== id));
     showToast('Coupon Removed', 'Coupon code was removed.', 'info');
+    try {
+      await deleteAdminCoupon(id);
+    } catch {
+      // Retain local removal
+    }
   };
 
-  const toggleCouponStatus = (id) => {
+  const toggleCouponStatus = async (id) => {
+    let nextActive = true;
     setCoupons(prev => prev.map(c => {
       if (c.id === id) {
         const next = c.status === 'Active' ? 'Disabled' : 'Active';
+        nextActive = next === 'Active';
         return { ...c, status: next };
       }
       return c;
     }));
     showToast('Coupon Status Updated', 'Promo code state changed.');
+    try {
+      await updateAdminCoupon(id, { isActive: nextActive });
+    } catch {
+      // Retain local update
+    }
   };
 
   // Notification Actions
@@ -539,9 +674,14 @@ export function StoreProvider({ children }) {
   };
 
   // Settings Actions
-  const updateSettings = (newData) => {
+  const updateSettings = async (newData) => {
     setSettings(prev => ({ ...prev, ...newData }));
     showToast('Settings Saved', 'Store configuration updated successfully.');
+    try {
+      await updateAdminSettings(newData);
+    } catch {
+      // Kept in local state
+    }
   };
 
   const updateProfile = (updates) => {

@@ -47,9 +47,9 @@ export function AdminLoginForm() {
       }
 
       window.localStorage.removeItem('admin_session');
-      clearCustomerLogin();
+      // clearCustomerLogin();
       clearCustomerData();
-      router.replace('/admin');
+      window.location.href = '/admin';
     } catch (requestError) {
       console.error('Unable to complete admin sign-in.', requestError);
       setError('Unable to reach the sign-in service. Please try again.');
@@ -68,7 +68,9 @@ export function AdminLoginForm() {
             <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[#D4AF37]/40 bg-white/10 text-[#D4AF37]">
               <ShieldCheck className="h-6 w-6" aria-hidden="true" />
             </span>
-            <h1 className="mt-6 max-w-sm text-3xl font-bold leading-tight">Good to have you back.</h1>
+            <h1 className="mt-6 max-w-sm text-3xl font-bold leading-tight">
+              Good to have you back.
+            </h1>
             <p className="mt-3 max-w-sm text-sm leading-6 text-emerald-100/80">
               Sign in to manage your catalog, orders, customers, and store experience.
             </p>
@@ -77,31 +79,90 @@ export function AdminLoginForm() {
         </div>
 
         <div className="p-6 sm:p-10">
-          <div className="md:hidden"><Logo width={145} height={64} href={null} /></div>
+          <div className="md:hidden">
+            <Logo width={145} height={64} href={null} />
+          </div>
           <div className="mt-6 md:mt-10">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-800">Admin portal</p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-950">Sign in to your account</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">Enter your administrator username or email and password to continue.</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-800">
+              Admin portal
+            </p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-950">
+              Sign in to your account
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Enter your administrator username or email and password to continue.
+            </p>
           </div>
 
           <form onSubmit={submit} className="mt-7 space-y-5">
             <div>
-              <label htmlFor="admin-username" className="mb-1.5 block text-sm font-semibold text-slate-800">Username or email</label>
+              <label
+                htmlFor="admin-username"
+                className="mb-1.5 block text-sm font-semibold text-slate-800"
+              >
+                Username or email
+              </label>
               <div className="relative">
-                <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
-                <input id="admin-username" type="text" autoComplete="username" required value={username} onChange={(event) => setUsername(event.target.value)} placeholder="Username or email" className={inputClass} />
+                <Mail
+                  className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                  aria-hidden="true"
+                />
+                <input
+                  id="admin-username"
+                  type="text"
+                  autoComplete="username"
+                  required
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  placeholder="Username or email"
+                  className={inputClass}
+                />
               </div>
             </div>
             <div>
-              <label htmlFor="admin-password" className="mb-1.5 block text-sm font-semibold text-slate-800">Password</label>
+              <label
+                htmlFor="admin-password"
+                className="mb-1.5 block text-sm font-semibold text-slate-800"
+              >
+                Password
+              </label>
               <div className="relative">
-                <KeyRound className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
-                <input id="admin-password" type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter your password" className={inputClass} />
+                <KeyRound
+                  className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                  aria-hidden="true"
+                />
+                <input
+                  id="admin-password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="Enter your password"
+                  className={inputClass}
+                />
               </div>
             </div>
-            {error && <p role="alert" className="rounded-xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>}
-            <button type="submit" disabled={isSubmitting} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-900 px-5 text-sm font-bold text-white transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60">
-              {isSubmitting ? 'Logging in…' : <>Login <ArrowRight className="h-4 w-4" aria-hidden="true" /></>}
+            {error && (
+              <p
+                role="alert"
+                className="rounded-xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700"
+              >
+                {error}
+              </p>
+            )}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-900 px-5 text-sm font-bold text-white transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
+            >
+              {isSubmitting ? (
+                'Logging in…'
+              ) : (
+                <>
+                  Login <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </>
+              )}
             </button>
           </form>
 
@@ -111,7 +172,9 @@ export function AdminLoginForm() {
               Admin credentials are configured securely on the server.
             </p>
           </div>
-          <p className="mt-6 text-center text-xs text-slate-500">Anonna Mart administrator access</p>
+          <p className="mt-6 text-center text-xs text-slate-500">
+            Anonna Mart administrator access
+          </p>
         </div>
       </section>
     </main>

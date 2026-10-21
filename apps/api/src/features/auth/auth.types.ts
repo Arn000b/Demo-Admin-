@@ -13,8 +13,17 @@ export interface AuthResult {
   expiresAt: Date;
 }
 export interface AuthService {
-  register(input: { email: string; password: string; fullName: string; phone?: string }): Promise<AuthResult | null>;
+  register(input: {
+    email: string;
+    password: string;
+    fullName: string;
+    phone?: string;
+  }): Promise<AuthResult | null>;
   login(email: string, password: string): Promise<AuthResult | null>;
   resolveSession(token: string): Promise<PublicAccount | null>;
   revokeSession(token: string): Promise<void>;
+  requestPasswordReset(email: string): Promise<string | null>;
+  resetPassword(token: string, password: string): Promise<boolean>;
+  requestEmailVerification(userId: string): Promise<string | null>;
+  verifyEmail(token: string): Promise<boolean>;
 }

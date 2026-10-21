@@ -6,6 +6,7 @@ import {
   date,
   index,
   integer,
+  jsonb,
   numeric,
   pgTable,
   type PgTableExtraConfig,
@@ -32,12 +33,16 @@ export const users = pgTable(
     phone: varchar('phone', { length: 32 }),
     status: varchar('status', { length: 20 }).notNull().default('pending'),
     role: varchar('role', { length: 20 }).notNull().default('customer'),
+    emailVerifiedAt: timestamp('email_verified_at', { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
   (t) =>
     extraConfig(
-      check('users_status_check', sql`${t.status} in ('pending', 'active', 'inactive', 'suspended', 'closed')`),
+      check(
+        'users_status_check',
+        sql`${t.status} in ('pending', 'active', 'inactive', 'suspended', 'closed')`
+      ),
       check('users_role_check', sql`${t.role} in ('customer', 'admin', 'vendor')`)
     )
 );
@@ -59,6 +64,30 @@ export const sessions = pgTable(
       index('sessions_user_idx').on(t.userId),
       index('sessions_expiry_idx').on(t.expiresAt),
       check('sessions_expiry_after_creation', sql`${t.expiresAt} > ${t.createdAt}`)
+    )
+);
+
+export const authActionTokens = pgTable(
+  'auth_action_tokens',
+  {
+    id: uuid('auth_action_token_id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tokenHash: varchar('token_hash', { length: 64 }).notNull().unique(),
+    action: varchar('action', { length: 24 }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    consumedAt: timestamp('consumed_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) =>
+    extraConfig(
+      index('auth_action_tokens_user_action_idx').on(t.userId, t.action),
+      index('auth_action_tokens_expiry_idx').on(t.expiresAt),
+      check(
+        'auth_action_tokens_action_check',
+        sql`${t.action} in ('password_reset', 'email_verification')`
+      )
     )
 );
 
@@ -123,8 +152,10 @@ export const vendors = pgTable(
     email: varchar('email', { length: 320 }).notNull().unique(),
     phone: varchar('phone', { length: 32 }),
     address: text('address'),
-    userId: uuid('user_id').unique().references(() => users.id, { onDelete: 'restrict' }),
-    commissionRate: numeric('commission_rate', { precision: 5, scale: 2 }).notNull().default('0'),
+    userId: uuid('user_id')
+      .unique()
+      .references(() => users.id, { onDelete: 'restrict' }),
+    commissionRate: numeric('commission_rate', { precision: 5, scale: 2 }).notNull().default('10'),
     status: varchar('status', { length: 20 }).notNull().default('pending'),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -190,10 +221,7 @@ export const variants = pgTable(
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (t) =>
-    extraConfig(
-      check('variants_weight_positive', sql`${t.weight} is null or ${t.weight} > 0`)
-    )
+  (t) => extraConfig(check('variants_weight_positive', sql`${t.weight} is null or ${t.weight} > 0`))
 );
 
 export const prices = pgTable(
@@ -343,6 +371,7 @@ export const orders = pgTable(
     orderNumber: varchar('order_number', { length: 40 }).notNull().unique(),
     checkoutKey: varchar('checkout_key', { length: 100 }),
     status: varchar('status', { length: 24 }).notNull().default('pending'),
+    currency: varchar('currency', { length: 3 }).notNull().default('BDT'),
     itemsTotal: money('items_total').notNull(),
     discountTotal: money('discount_total').notNull().default('0'),
     shippingFee: money('shipping_fee').notNull().default('0'),
@@ -355,11 +384,14 @@ export const orders = pgTable(
   (t) =>
     extraConfig(
       index('orders_customer_date_idx').on(t.customerId, t.orderDate),
-      uniqueIndex('orders_customer_checkout_key_unique').on(t.customerId, t.checkoutKey).where(sql`${t.checkoutKey} is not null`),
+      uniqueIndex('orders_customer_checkout_key_unique')
+        .on(t.customerId, t.checkoutKey)
+        .where(sql`${t.checkoutKey} is not null`),
       check(
         'orders_status_check',
         sql`${t.status} in ('pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded')`
       ),
+      check('orders_currency_bdt_only', sql`${t.currency} = 'BDT'`),
       check(
         'orders_amounts_nonnegative',
         sql`${t.itemsTotal} >= 0 and ${t.discountTotal} >= 0 and ${t.shippingFee} >= 0 and ${t.taxTotal} >= 0 and ${t.grandTotal} >= 0`
@@ -422,22 +454,30 @@ export const orderReservations = pgTable(
   'order_reservations',
   {
     id: uuid('order_reservation_id').defaultRandom().primaryKey(),
-    orderItemId: uuid('order_item_id').notNull().references(() => orderItems.id, { onDelete: 'restrict' }),
-    stockId: uuid('stock_id').notNull().references(() => stocks.id, { onDelete: 'restrict' }),
+    orderItemId: uuid('order_item_id')
+      .notNull()
+      .references(() => orderItems.id, { onDelete: 'restrict' }),
+    stockId: uuid('stock_id')
+      .notNull()
+      .references(() => stocks.id, { onDelete: 'restrict' }),
     quantity: integer('quantity').notNull(),
     status: varchar('status', { length: 16 }).notNull().default('reserved'),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (t) => extraConfig(
-    unique('order_reservations_item_stock_unique').on(t.orderItemId, t.stockId),
-    index('order_reservations_expiry_idx').on(t.status, t.expiresAt),
-    index('order_reservations_stock_status_idx').on(t.stockId, t.status),
-    check('order_reservations_quantity_positive', sql`${t.quantity} > 0`),
-    check('order_reservations_status_check', sql`${t.status} in ('reserved', 'confirmed', 'released', 'expired')`),
-    check('order_reservations_expiry_after_creation', sql`${t.expiresAt} > ${t.createdAt}`)
-  )
+  (t) =>
+    extraConfig(
+      unique('order_reservations_item_stock_unique').on(t.orderItemId, t.stockId),
+      index('order_reservations_expiry_idx').on(t.status, t.expiresAt),
+      index('order_reservations_stock_status_idx').on(t.stockId, t.status),
+      check('order_reservations_quantity_positive', sql`${t.quantity} > 0`),
+      check(
+        'order_reservations_status_check',
+        sql`${t.status} in ('reserved', 'confirmed', 'released', 'expired')`
+      ),
+      check('order_reservations_expiry_after_creation', sql`${t.expiresAt} > ${t.createdAt}`)
+    )
 );
 
 export const coupons = pgTable(
@@ -489,12 +529,10 @@ export const couponUses = pgTable(
       .notNull()
       .references(() => customers.id, { onDelete: 'restrict' }),
     discountGiven: money('discount_given').notNull(),
+    usageReleasedAt: timestamp('usage_released_at', { withTimezone: true }),
     createdAt: createdAt(),
   },
-  (t) =>
-    extraConfig(
-      check('coupon_uses_discount_nonnegative', sql`${t.discountGiven} >= 0`)
-    )
+  (t) => extraConfig(check('coupon_uses_discount_nonnegative', sql`${t.discountGiven} >= 0`))
 );
 
 export const payments = pgTable(
@@ -507,7 +545,11 @@ export const payments = pgTable(
     amount: money('amount').notNull(),
     paymentMethod: varchar('payment_method', { length: 32 }).notNull(),
     status: varchar('status', { length: 24 }).notNull().default('pending'),
+    currency: varchar('currency', { length: 3 }).notNull().default('BDT'),
     transactionId: varchar('transaction_id', { length: 200 }),
+    gatewayTransactionId: varchar('gateway_transaction_id', { length: 200 }),
+    reconciliationAttempts: integer('reconciliation_attempts').notNull().default(0),
+    nextReconciliationAt: timestamp('next_reconciliation_at', { withTimezone: true }),
     paymentDate: timestamp('payment_date', { withTimezone: true }),
     createdAt: createdAt(),
   },
@@ -517,7 +559,12 @@ export const payments = pgTable(
       uniqueIndex('payments_transaction_id_unique')
         .on(t.transactionId)
         .where(sql`${t.transactionId} is not null`),
+      uniqueIndex('payments_gateway_transaction_id_unique')
+        .on(t.gatewayTransactionId)
+        .where(sql`${t.gatewayTransactionId} is not null`),
       check('payments_amount_positive', sql`${t.amount} > 0`),
+      check('payments_currency_bdt_only', sql`${t.currency} = 'BDT'`),
+      check('payments_reconciliation_attempts_nonnegative', sql`${t.reconciliationAttempts} >= 0`),
       check(
         'payments_status_check',
         sql`${t.status} in ('pending', 'authorized', 'captured', 'failed', 'cancelled', 'partially_refunded', 'refunded')`
@@ -538,15 +585,102 @@ export const refunds = pgTable(
       onDelete: 'restrict',
     }),
     status: varchar('status', { length: 20 }).notNull().default('pending'),
+    attemptCount: integer('attempt_count').notNull().default(0),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
+    lastAttemptAt: timestamp('last_attempt_at', { withTimezone: true }),
+    gatewayRefundId: varchar('gateway_refund_id', { length: 200 }),
+    gatewayRefundBaseline: jsonb('gateway_refund_baseline').$type<string[]>(),
+    lastError: text('last_error'),
     createdAt: createdAt(),
   },
   (t) =>
     extraConfig(
       check('refunds_amount_positive', sql`${t.amount} > 0`),
+      check('refunds_attempt_count_nonnegative', sql`${t.attemptCount} >= 0`),
       check(
         'refunds_status_check',
         sql`${t.status} in ('pending', 'approved', 'rejected', 'processed')`
       )
+    )
+);
+
+export const vendorLedgerEntries = pgTable(
+  'vendor_ledger_entries',
+  {
+    id: uuid('vendor_ledger_entry_id').defaultRandom().primaryKey(),
+    vendorId: uuid('vendor_id')
+      .notNull()
+      .references(() => vendors.id, { onDelete: 'restrict' }),
+    orderId: uuid('order_id').references(() => orders.id, { onDelete: 'restrict' }),
+    paymentId: uuid('payment_id').references(() => payments.id, { onDelete: 'restrict' }),
+    entryType: varchar('entry_type', { length: 16 }).notNull(),
+    amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
+    currency: varchar('currency', { length: 3 }).notNull().default('BDT'),
+    referenceKey: varchar('reference_key', { length: 200 }).notNull().unique(),
+    memo: text('memo'),
+    recordedByUserId: uuid('recorded_by_user_id').references(() => users.id, {
+      onDelete: 'restrict',
+    }),
+    createdAt: createdAt(),
+  },
+  (t) =>
+    extraConfig(
+      index('vendor_ledger_vendor_created_idx').on(t.vendorId, t.createdAt),
+      check(
+        'vendor_ledger_entry_type_check',
+        sql`${t.entryType} in ('sale', 'refund', 'payout', 'adjustment')`
+      ),
+      check('vendor_ledger_amount_nonzero', sql`${t.amount} <> 0`),
+      check('vendor_ledger_currency_bdt_only', sql`${t.currency} = 'BDT'`),
+      check(
+        `vendor_ledger_entry_sign`,
+        sql`(${t.entryType} = 'sale' and ${t.amount} > 0) or (${t.entryType} in ('refund', 'payout') and ${t.amount} < 0) or ${t.entryType} = 'adjustment'`
+      )
+    )
+);
+
+export const paymentWebhooks = pgTable(
+  'payment_webhooks',
+  {
+    id: uuid('payment_webhook_id').defaultRandom().primaryKey(),
+    provider: varchar('provider', { length: 32 }).notNull(),
+    eventId: varchar('event_id', { length: 200 }).notNull().unique(),
+    paymentId: uuid('payment_id').references(() => payments.id, { onDelete: 'restrict' }),
+    providerPaymentId: varchar('provider_payment_id', { length: 200 }).notNull(),
+    eventType: varchar('event_type', { length: 40 }).notNull(),
+    payload: jsonb('payload').$type<Record<string, string | boolean>>().notNull(),
+    status: varchar('status', { length: 20 }).notNull().default('pending'),
+    attemptCount: integer('attempt_count').notNull().default(0),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }).notNull().defaultNow(),
+    lockedUntil: timestamp('locked_until', { withTimezone: true }),
+    processedAt: timestamp('processed_at', { withTimezone: true }),
+    lastError: text('last_error'),
+    createdAt: createdAt(),
+  },
+  (t) =>
+    extraConfig(
+      index('payment_webhooks_work_idx').on(t.status, t.nextAttemptAt),
+      index('payment_webhooks_provider_payment_idx').on(t.provider, t.providerPaymentId),
+      check('payment_webhooks_attempt_count_nonnegative', sql`${t.attemptCount} >= 0`),
+      check(
+        'payment_webhooks_status_check',
+        sql`${t.status} in ('pending', 'processing', 'processed', 'failed')`
+      )
+    )
+);
+
+export const paymentGatewayTokens = pgTable(
+  'payment_gateway_tokens',
+  {
+    provider: varchar('provider', { length: 32 }).notNull(),
+    accountKey: varchar('account_key', { length: 64 }).notNull(),
+    encryptedAccessToken: text('encrypted_access_token').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    updatedAt: updatedAt(),
+  },
+  (t) =>
+    extraConfig(
+      unique('payment_gateway_tokens_provider_account_unique').on(t.provider, t.accountKey)
     )
 );
 

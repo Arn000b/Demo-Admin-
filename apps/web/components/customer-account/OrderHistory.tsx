@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { ArrowRight, PackageOpen } from 'lucide-react';
 import { formatTaka } from '@/components/storefront/types';
 import { readMockOrders, type MockOrder } from './orders';
+import { fetchCustomerOrders } from '@/lib/api/commerce';
+import { useAuth } from '@/context/auth-context';
 
 function statusClasses(status: string) {
   if (status === 'Delivered') return 'bg-emerald-50 text-emerald-800';
@@ -24,7 +26,9 @@ function OrderCard({ order }: { order: MockOrder }) {
             Placed {new Date(order.createdAt).toLocaleDateString('en-BD', { dateStyle: 'medium' })}
           </p>
         </div>
-        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusClasses(order.orderStatus)}`}>
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-semibold ${statusClasses(order.orderStatus)}`}
+        >
           {order.orderStatus}
         </span>
       </div>
@@ -32,9 +36,19 @@ function OrderCard({ order }: { order: MockOrder }) {
         <div className="flex items-center gap-3">
           <div className="flex -space-x-2">
             {order.items.slice(0, 3).map((item) => (
-              <span key={item.productId} className="relative h-10 w-10 overflow-hidden rounded-lg border-2 border-white bg-slate-100">
+              <span
+                key={item.productId}
+                className="relative h-10 w-10 overflow-hidden rounded-lg border-2 border-white bg-slate-100"
+              >
                 {item.image ? (
-                  <Image src={item.image} alt="" fill sizes="40px" unoptimized className="object-cover" />
+                  <Image
+                    src={item.image}
+                    alt=""
+                    fill
+                    sizes="40px"
+                    unoptimized
+                    className="object-cover"
+                  />
                 ) : (
                   <PackageOpen className="m-2 h-5 w-5 text-slate-400" aria-hidden="true" />
                 )}
@@ -42,7 +56,8 @@ function OrderCard({ order }: { order: MockOrder }) {
             ))}
           </div>
           <p className="text-sm text-slate-600">
-            {order.items.length} {order.items.length === 1 ? 'item' : 'items'} · {formatTaka(order.total)}
+            {order.items.length} {order.items.length === 1 ? 'item' : 'items'} ·{' '}
+            {formatTaka(order.total)}
           </p>
         </div>
         <Link
@@ -57,13 +72,77 @@ function OrderCard({ order }: { order: MockOrder }) {
 }
 
 export function OrderHistory({ compact = false }: { compact?: boolean }) {
+  const { user } = useAuth();
   const [orders, setOrders] = useState<MockOrder[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setOrders(readMockOrders().sort((first, second) => (
-      new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime()
-    )));
-  }, []);
+    let isMounted = true;
+    async function loadOrders() {
+      setIsLoading(true);
+      const local = readMockOrders();
+      let apiOrders: MockOrder[] = [];
+      if (user) {
+        try {
+          const res = await fetchCustomerOrders({ pageSize: 50 });
+          if (res?.data && Array.isArray(res.data)) {
+            apiOrders = res.data.map((o) => {
+              const statusMap: Record<string, MockOrder['orderStatus']> = {
+                pending: 'Order Placed',
+                processing: 'Processing',
+                shipped: 'Shipped',
+                delivered: 'Delivered',
+                cancelled: 'Cancelled',
+              };
+              const mappedStatus = statusMap[o.status] || 'Order Placed';
+              return {
+                id: o.orderNumber || o.id,
+                createdAt: o.orderDate || o.createdAt,
+                estimatedDeliveryAt: new Date(
+                  new Date(o.orderDate || o.createdAt).getTime() + 4 * 86400000
+                ).toISOString(),
+                orderStatus: mappedStatus,
+                customerName: user.name || 'Valued Customer',
+                email: user.email || '',
+                phone: user.phone || '',
+                deliveryAddress: 'Dhaka, Bangladesh',
+                shippingMethod: 'Standard Delivery',
+                shippingFee: Number(o.shippingFee || 0),
+                paymentMethod: 'bKash',
+                paymentStatus:
+                  o.status === 'delivered' || o.status === 'shipped' || o.status === 'processing'
+                    ? 'Paid'
+                    : 'Cash on Delivery',
+                items: (o.items || []).map((it) => ({
+                  productId: it.variantId || it.id,
+                  name: it.name || 'Artisan Product',
+                  quantity: it.quantity,
+                  unitPrice: Number(it.purchasedPrice || 0),
+                })),
+                subtotal: Number(o.itemsTotal || o.grandTotal),
+                discount: Number(o.discountTotal || 0),
+                couponCode: null,
+                total: Number(o.grandTotal),
+              };
+            });
+          }
+        } catch {
+          // Fallback cleanly to local storage
+        }
+      }
+      if (!isMounted) return;
+      const existingIds = new Set(apiOrders.map((o) => o.id));
+      const combined = [...apiOrders, ...local.filter((o) => !existingIds.has(o.id))];
+      setOrders(
+        combined.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      );
+      setIsLoading(false);
+    }
+    loadOrders();
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
 
   if (!orders.length) {
     return (
@@ -86,9 +165,14 @@ export function OrderHistory({ compact = false }: { compact?: boolean }) {
   const visibleOrders = compact ? orders.slice(0, 2) : orders;
   return (
     <div className="mt-5 space-y-3">
-      {visibleOrders.map((order) => <OrderCard key={order.id} order={order} />)}
+      {visibleOrders.map((order) => (
+        <OrderCard key={order.id} order={order} />
+      ))}
       {compact && orders.length > visibleOrders.length && (
-        <Link href="/account/orders" className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-emerald-900 hover:text-emerald-700">
+        <Link
+          href="/account/orders"
+          className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-emerald-900 hover:text-emerald-700"
+        >
           View all orders <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
       )}

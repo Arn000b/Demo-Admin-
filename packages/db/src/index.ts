@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
@@ -8,7 +10,11 @@ function isValidDatabaseUrl(value: string | undefined): value is string {
   if (!value) return false;
   try {
     const parsed = new URL(value);
-    return (parsed.protocol === 'postgres:' || parsed.protocol === 'postgresql:') && Boolean(parsed.hostname) && parsed.pathname.length > 1;
+    return (
+      (parsed.protocol === 'postgres:' || parsed.protocol === 'postgresql:') &&
+      Boolean(parsed.hostname) &&
+      parsed.pathname.length > 1
+    );
   } catch {
     return false;
   }

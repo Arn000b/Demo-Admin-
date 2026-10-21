@@ -3,29 +3,39 @@
 import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Info } from 'lucide-react';
+import { Eye, EyeOff, Lock, LockKeyhole, Mail, User } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { useCustomerDemo } from '@/components/providers/CustomerDemoContext';
 
-const inputClass =
-  'input-premium min-h-12 rounded-lg px-3 text-base aria-[invalid=true]:border-rose-600 aria-[invalid=true]:focus:ring-rose-600/20';
 const loginInputClass =
-  'min-h-12 w-full rounded-lg border border-slate-200 bg-white px-3 text-base text-slate-900 placeholder:text-slate-400 transition-colors focus:border-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 aria-[invalid=true]:border-rose-600 aria-[invalid=true]:focus:ring-rose-600/20';
-const signupInputClass =
-  'min-h-12 w-full rounded-lg border border-slate-200 bg-white px-3 text-base text-slate-900 placeholder:text-slate-400 transition-colors focus:border-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 aria-[invalid=true]:border-rose-600 aria-[invalid=true]:focus:ring-rose-600/20';
-const buttonClass =
-  'inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-brand-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700 focus-visible:ring-offset-2';
-const signupButtonClass =
-  'inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-emerald-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2';
-const loginButtonClass =
-  'inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-emerald-900 px-4 text-sm font-semibold text-white transition duration-150 hover:bg-emerald-800 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2';
+  'min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition focus:border-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-700/15';
 
-function AuthNotice({ children }: { children: string }) {
+const loginButtonClass =
+  'inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-800 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700 focus-visible:ring-offset-2';
+
+const signupInputClass =
+  'min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition focus:border-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-700/15';
+
+const signupButtonClass =
+  'inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-800 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700 focus-visible:ring-offset-2';
+
+const inputClass =
+  'min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition focus:border-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-700/15';
+
+const buttonClass =
+  'inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-800 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700 focus-visible:ring-offset-2';
+
+function AuthNotice({ children }: { children: React.ReactNode }) {
   return (
-    <p role="status" className="mt-5 flex items-start gap-2 rounded-lg border border-gold-300 bg-gold-50 p-3 text-sm leading-5 text-brand-950">
-      <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-800" aria-hidden="true" />
-      <span>{children}</span>
-    </p>
+    <div
+      role="status"
+      className="mt-5 rounded-xl border border-amber-200 bg-amber-50/80 p-4 text-xs leading-5 text-amber-950 sm:text-sm sm:leading-6"
+    >
+      <div className="flex items-start gap-3">
+        <Lock className="mt-0.5 h-4 w-4 shrink-0 text-amber-900" aria-hidden="true" />
+        <div>{children}</div>
+      </div>
+    </div>
   );
 }
 
@@ -44,38 +54,43 @@ function PasswordInput({
   onChange: (value: string) => void;
   error?: string;
   autoComplete: string;
-  className?: string;
+  className: string;
 }) {
-  const [visible, setVisible] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const errorId = `${id}-error`;
 
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-slate-800">{label}</label>
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-slate-800">
+        {label}
+      </label>
       <div className="relative">
         <input
           id={id}
           name={id}
-          type={visible ? 'text' : 'password'}
+          type={showPassword ? 'text' : 'password'}
           autoComplete={autoComplete}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           required
           aria-invalid={Boolean(error)}
           aria-describedby={error ? errorId : undefined}
-          className={`${className ?? inputClass} pr-12`}
+          className={`${className} pr-11`}
         />
         <button
           type="button"
-          aria-label={visible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
-          aria-pressed={visible}
-          onClick={() => setVisible((current) => !current)}
-          className="absolute inset-y-0 right-0 inline-flex w-12 items-center justify-center rounded-r-lg text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-700"
+          onClick={() => setShowPassword((prev) => !prev)}
+          className="absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-400 hover:text-slate-600 focus:outline-none"
+          aria-label={showPassword ? 'Hide password' : 'Show password'}
         >
-          {visible ? <EyeOff className="h-5 w-5" aria-hidden="true" /> : <Eye className="h-5 w-5" aria-hidden="true" />}
+          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
       </div>
-      {error && <p id={errorId} role="alert" className="mt-1.5 text-sm text-rose-700">{error}</p>}
+      {error && (
+        <p id={errorId} role="alert" className="mt-1.5 text-sm text-rose-700">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -94,56 +109,50 @@ export function CustomerLoginForm() {
     event.preventDefault();
     setSubmitError('');
     const nextErrors: typeof errors = {};
-    if (!email.trim()) nextErrors.email = 'Enter your email address or admin ID.';
+    if (!email.trim()) nextErrors.email = 'Enter your email address.';
     if (!password) nextErrors.password = 'Enter your password.';
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify({ username: email.trim(), password }),
-      });
+      const result = await login({ email: email.trim(), password });
+      if (!result.success) {
+        // Fallback check: emergency admin credentials on Next.js route
+        const adminResp = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ username: email.trim(), password }),
+        }).catch(() => null);
 
-      if (response.ok) {
+        if (adminResp && adminResp.ok) {
+          clearCustomerLogin();
+          clearCustomerData();
+          router.replace('/admin');
+          return;
+        }
+
+        setSubmitError(result.error ?? 'Invalid email or password.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (result.role === 'admin' || result.role === 'vendor') {
+        // Establish admin cookie for Next.js route middleware as well
+        await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ username: email.trim(), password }),
+        }).catch(() => null);
+
         clearCustomerLogin();
         clearCustomerData();
         router.replace('/admin');
         return;
       }
 
-      if (response.status !== 401) {
-        const result: unknown = await response.json().catch(() => null);
-        const message =
-          typeof result === 'object' &&
-          result !== null &&
-          'error' in result &&
-          typeof result.error === 'string'
-            ? result.error
-            : 'Unable to sign in right now. Please try again.';
-        setSubmitError(message);
-        setIsSubmitting(false);
-        return;
-      }
-
-      const logoutResponse = await fetch('/api/admin/logout', {
-        method: 'POST',
-        credentials: 'same-origin',
-      });
-      if (!logoutResponse.ok) {
-        throw new Error('Unable to clear an existing admin session before customer sign-in.');
-      }
-
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-        setErrors({ email: 'Enter a valid email address.' });
-        setIsSubmitting(false);
-        return;
-      }
-
-      login();
       router.replace('/account');
     } catch (error) {
       console.error('Unable to complete sign-in.', error);
@@ -159,7 +168,9 @@ export function CustomerLoginForm() {
 
       <form noValidate onSubmit={submit} className="mt-6 space-y-5">
         <div>
-          <label htmlFor="login-email" className="mb-1.5 block text-sm font-medium text-slate-800">Email address</label>
+          <label htmlFor="login-email" className="mb-1.5 block text-sm font-medium text-slate-800">
+            Email address
+          </label>
           <input
             id="login-email"
             name="email"
@@ -172,7 +183,11 @@ export function CustomerLoginForm() {
             aria-describedby={errors.email ? 'login-email-error' : undefined}
             className={loginInputClass}
           />
-          {errors.email && <p id="login-email-error" role="alert" className="mt-1.5 text-sm text-rose-700">{errors.email}</p>}
+          {errors.email && (
+            <p id="login-email-error" role="alert" className="mt-1.5 text-sm text-rose-700">
+              {errors.email}
+            </p>
+          )}
         </div>
         <PasswordInput
           id="login-password"
@@ -184,19 +199,35 @@ export function CustomerLoginForm() {
           className={loginInputClass}
         />
         <div className="flex justify-end">
-          <Link href="/forgot-password" className="text-sm font-semibold text-brand-800 underline-offset-4 hover:underline">
+          <Link
+            href="/forgot-password"
+            className="text-brand-800 text-sm font-semibold underline-offset-4 hover:underline"
+          >
             Forgot password?
           </Link>
         </div>
-        {submitError && <p role="alert" className="text-sm text-rose-700">{submitError}</p>}
-        <button type="submit" disabled={isSubmitting} className={`${loginButtonClass} disabled:cursor-wait disabled:opacity-60`}>
+        {submitError && (
+          <p role="alert" className="text-sm text-rose-700">
+            {submitError}
+          </p>
+        )}
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className={`${loginButtonClass} disabled:cursor-wait disabled:opacity-60`}
+        >
           {isSubmitting ? 'Signing in…' : 'Sign In'}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-slate-600">
         New to Anonna Mart?{' '}
-        <Link href="/signup" className="font-semibold text-brand-800 underline-offset-4 hover:underline">Create an account</Link>
+        <Link
+          href="/signup"
+          className="text-brand-800 font-semibold underline-offset-4 hover:underline"
+        >
+          Create an account
+        </Link>
       </p>
     </div>
   );
@@ -204,15 +235,19 @@ export function CustomerLoginForm() {
 
 export function CustomerSignupForm() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { register } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setSubmitError('');
     const nextErrors: Record<string, string> = {};
     if (!name.trim()) nextErrors.name = 'Enter your full name.';
     if (!email.trim()) nextErrors.email = 'Enter your email address.';
@@ -224,9 +259,27 @@ export function CustomerSignupForm() {
     }
     if (confirmPassword !== password) nextErrors.confirmPassword = 'Passwords do not match.';
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length === 0) {
-      login({ name: name.trim(), email: email.trim() });
+    if (Object.keys(nextErrors).length > 0) return;
+
+    setIsSubmitting(true);
+    try {
+      const result = await register({
+        fullName: name.trim(),
+        email: email.trim(),
+        phone: phone.trim() || undefined,
+        password,
+      });
+
+      if (!result.success) {
+        setSubmitError(result.error ?? 'Registration failed. Please try again.');
+        setIsSubmitting(false);
+        return;
+      }
+
       router.replace('/account');
+    } catch {
+      setSubmitError('Unable to reach the registration service. Please try again.');
+      setIsSubmitting(false);
     }
   };
 
@@ -236,30 +289,123 @@ export function CustomerSignupForm() {
 
       <form noValidate onSubmit={submit} className="mt-6 space-y-5">
         <div>
-          <label htmlFor="signup-name" className="mb-1.5 block text-sm font-medium text-slate-800">Full name</label>
-          <input id="signup-name" name="name" autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} required aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? 'signup-name-error' : undefined} className={signupInputClass} />
-          {errors.name && <p id="signup-name-error" role="alert" className="mt-1.5 text-sm text-rose-700">{errors.name}</p>}
+          <label htmlFor="signup-name" className="mb-1.5 block text-sm font-medium text-slate-800">
+            Full name
+          </label>
+          <input
+            id="signup-name"
+            name="name"
+            autoComplete="name"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            required
+            aria-invalid={Boolean(errors.name)}
+            aria-describedby={errors.name ? 'signup-name-error' : undefined}
+            className={signupInputClass}
+          />
+          {errors.name && (
+            <p id="signup-name-error" role="alert" className="mt-1.5 text-sm text-rose-700">
+              {errors.name}
+            </p>
+          )}
         </div>
         <div>
-          <label htmlFor="signup-email" className="mb-1.5 block text-sm font-medium text-slate-800">Email address</label>
-          <input id="signup-email" name="email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? 'signup-email-error' : undefined} className={signupInputClass} />
-          {errors.email && <p id="signup-email-error" role="alert" className="mt-1.5 text-sm text-rose-700">{errors.email}</p>}
+          <label htmlFor="signup-email" className="mb-1.5 block text-sm font-medium text-slate-800">
+            Email address
+          </label>
+          <input
+            id="signup-email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            required
+            aria-invalid={Boolean(errors.email)}
+            aria-describedby={errors.email ? 'signup-email-error' : undefined}
+            className={signupInputClass}
+          />
+          {errors.email && (
+            <p id="signup-email-error" role="alert" className="mt-1.5 text-sm text-rose-700">
+              {errors.email}
+            </p>
+          )}
         </div>
-        <PasswordInput id="signup-password" label="Password" value={password} onChange={setPassword} error={errors.password} autoComplete="new-password" className={signupInputClass} />
-        <p className="-mt-4 text-xs leading-5 text-slate-500">Password requirements: at least 8 characters and 1 number.</p>
-        <PasswordInput id="signup-confirm-password" label="Confirm password" value={confirmPassword} onChange={setConfirmPassword} error={errors.confirmPassword} autoComplete="new-password" className={signupInputClass} />
-        <button type="submit" className={signupButtonClass}>Create account</button>
+        <div>
+          <label htmlFor="signup-phone" className="mb-1.5 block text-sm font-medium text-slate-800">
+            Phone number (optional)
+          </label>
+          <input
+            id="signup-phone"
+            name="phone"
+            type="tel"
+            autoComplete="tel"
+            value={phone}
+            onChange={(event) => setPhone(event.target.value)}
+            className={signupInputClass}
+            placeholder="+880 1XXX-XXXXXX"
+          />
+        </div>
+        <PasswordInput
+          id="signup-password"
+          label="Password"
+          value={password}
+          onChange={setPassword}
+          error={errors.password}
+          autoComplete="new-password"
+          className={signupInputClass}
+        />
+        <p className="-mt-4 text-xs leading-5 text-slate-500">
+          Password requirements: at least 8 characters and 1 number.
+        </p>
+        <PasswordInput
+          id="signup-confirm-password"
+          label="Confirm password"
+          value={confirmPassword}
+          onChange={setConfirmPassword}
+          error={errors.confirmPassword}
+          autoComplete="new-password"
+          className={signupInputClass}
+        />
+        {submitError && (
+          <p role="alert" className="text-sm text-rose-700">
+            {submitError}
+          </p>
+        )}
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className={`${signupButtonClass} disabled:cursor-wait disabled:opacity-60`}
+        >
+          {isSubmitting ? 'Creating account…' : 'Create account'}
+        </button>
         <p className="text-center text-xs leading-5 text-slate-500">
           By creating an account, you agree to Anonna Mart&apos;s{' '}
-          <Link href="/terms" className="font-medium text-brand-800 underline-offset-4 hover:underline">Terms of Service</Link>
-          {' '}and{' '}
-          <Link href="/privacy" className="font-medium text-brand-800 underline-offset-4 hover:underline">Privacy Policy</Link>.
+          <Link
+            href="/terms"
+            className="text-brand-800 font-medium underline-offset-4 hover:underline"
+          >
+            Terms of Service
+          </Link>{' '}
+          and{' '}
+          <Link
+            href="/privacy"
+            className="text-brand-800 font-medium underline-offset-4 hover:underline"
+          >
+            Privacy Policy
+          </Link>
+          .
         </p>
       </form>
 
       <p className="mt-6 text-center text-sm text-slate-600">
         Already have an account?{' '}
-        <Link href="/login" className="font-semibold text-brand-800 underline-offset-4 hover:underline">Sign in</Link>
+        <Link
+          href="/login"
+          className="text-brand-800 font-semibold underline-offset-4 hover:underline"
+        >
+          Sign in
+        </Link>
       </p>
     </div>
   );
@@ -269,8 +415,9 @@ export function CustomerForgotPasswordForm() {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!email.trim()) {
       setError('Enter your email address.');
@@ -283,25 +430,82 @@ export function CustomerForgotPasswordForm() {
       return;
     }
     setError('');
-    setMessage('Password recovery is not available yet. Please contact customer support for assistance.');
+    setIsSubmitting(true);
+    try {
+      const api = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
+      const response = await fetch(`${api}/auth/password-reset/request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      const body = await response.json().catch(() => null);
+      if (body?.success || response.ok) {
+        setMessage(
+          'If an account exists for this email, you will receive password reset instructions.'
+        );
+      } else {
+        setMessage(body?.error ?? 'Unable to request password reset. Please try again later.');
+      }
+    } catch {
+      setMessage(
+        'If an account exists for this email, you will receive password reset instructions.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
-      <p className="text-sm font-semibold text-brand-700">Account help</p>
-      <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-950">Forgot your password?</h1>
-      <p className="mt-2 text-sm leading-6 text-slate-600">Enter your account email address. We’ll check the format, but password recovery is not connected yet.</p>
+      <p className="text-brand-700 text-sm font-semibold">Account help</p>
+      <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-950">
+        Forgot your password?
+      </h1>
+      <p className="mt-2 text-sm leading-6 text-slate-600">
+        Enter your account email address to receive password recovery instructions.
+      </p>
       <form noValidate onSubmit={submit} className="mt-6 space-y-5">
         <div>
-          <label htmlFor="recovery-email" className="mb-1.5 block text-sm font-medium text-slate-800">Email address</label>
-          <input id="recovery-email" name="email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required aria-invalid={Boolean(error)} aria-describedby={error ? 'recovery-email-error' : undefined} className={inputClass} />
-          {error && <p id="recovery-email-error" role="alert" className="mt-1.5 text-sm text-rose-700">{error}</p>}
+          <label
+            htmlFor="recovery-email"
+            className="mb-1.5 block text-sm font-medium text-slate-800"
+          >
+            Email address
+          </label>
+          <input
+            id="recovery-email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            required
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? 'recovery-email-error' : undefined}
+            className={inputClass}
+          />
+          {error && (
+            <p id="recovery-email-error" role="alert" className="mt-1.5 text-sm text-rose-700">
+              {error}
+            </p>
+          )}
         </div>
-        <button type="submit" className={buttonClass}>Continue</button>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className={`${buttonClass} disabled:opacity-60`}
+        >
+          {isSubmitting ? 'Submitting…' : 'Continue'}
+        </button>
       </form>
       {message && <AuthNotice>{message}</AuthNotice>}
       <p className="mt-6 text-center text-sm">
-        <Link href="/login" className="font-semibold text-brand-800 underline-offset-4 hover:underline">Back to sign in</Link>
+        <Link
+          href="/login"
+          className="text-brand-800 font-semibold underline-offset-4 hover:underline"
+        >
+          Back to sign in
+        </Link>
       </p>
     </div>
   );

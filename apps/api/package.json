@@ -7,13 +7,14 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc --noEmit && esbuild src/index.ts --bundle --platform=node --format=esm --target=node20 --outfile=dist/index.js",
     "lint": "tsc --noEmit",
-    "test": "tsx --test src/lib/pagination.test.ts src/features/auth/auth.test.ts src/features/auth/admin-provisioning.test.ts src/middleware/rate-limit.middleware.test.ts src/features/catalog/catalog.test.ts src/features/commerce/commerce.test.ts src/features/payments/payment.test.ts src/features/payments/refund.rules.test.ts src/features/fulfillment/fulfillment.test.ts src/features/customers/customer.routes.test.ts src/features/administration/administration.test.ts src/routes/health.routes.test.ts",
+    "test": "tsx --test src/lib/logger.test.ts src/infra/cache/redis.test.ts src/lib/pagination.test.ts src/features/auth/auth.test.ts src/features/auth/admin-provisioning.test.ts src/middleware/rate-limit.middleware.test.ts src/features/catalog/catalog.test.ts src/features/commerce/commerce.test.ts src/features/commerce/tax.test.ts src/features/payments/payment.test.ts src/features/payments/payment.provider.test.ts src/features/payments/vendor-ledger.rules.test.ts src/features/payments/refund.rules.test.ts src/features/fulfillment/fulfillment.test.ts src/features/customers/customer.routes.test.ts src/features/administration/administration.test.ts src/routes/health.routes.test.ts && node --test scripts/local-rate-limiter.test.mjs scripts/integration-safety.test.mjs scripts/postgres-integration-safety.test.mjs",
+    "payments:worker": "node --import tsx scripts/payment-worker.ts",
     "provision:admin:local": "tsx scripts/provision-local-admin.ts",
     "dev:rate-limiter": "node scripts/local-rate-limiter.mjs",
     "test:rate-limiter:local": "node --test scripts/local-rate-limiter.test.mjs",
-    "test:integration:safety": "node --test scripts/integration-safety.test.mjs scripts/postgres-integration-safety.test.mjs",
-    "test:integration:readonly": "node --test scripts/database-readonly.integration.test.mjs",
-    "test:integration:postgres": "node --test scripts/order-reservation.integration.test.mjs",
+    "test:integration:safety": "node --env-file=.env --test scripts/integration-safety.test.mjs scripts/postgres-integration-safety.test.mjs",
+    "test:integration:readonly": "node --env-file=.env --test scripts/database-readonly.integration.test.mjs",
+    "test:integration:postgres": "node --env-file=.env --test scripts/order-reservation.integration.test.mjs scripts/postgres-commerce.integration.test.mjs",
     "start": "node dist/index.js"
   },
   "dependencies": {
@@ -25,14 +26,14 @@
     "dotenv": "^18.0.7",
     "drizzle-orm": "^0.32.0",
     "hono": "^4.4.0",
+    "ioredis": "^6.0.0",
+    "pino": "^10.4.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {
-<<<<<<< HEAD
     "@types/node": "^20.0.0",
-=======
     "esbuild": "0.19.12",
->>>>>>> feature/my-new-code
+    "pino-pretty": "^13.2.0",
     "tsx": "^4.16.0",
     "typescript": "^5.5.0"
   }

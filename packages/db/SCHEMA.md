@@ -2,7 +2,7 @@
 
 ## Confirmed tables
 
-The supplied ER diagram and table-name list both confirm these 25 entities:
+The supplied ER diagram and table-name list both confirm these 25 core entities:
 
 1. User (`users`)
 2. Credential (`credentials`)
@@ -30,8 +30,14 @@ The supplied ER diagram and table-name list both confirm these 25 entities:
 24. ShipmentItem (`shipment_items`)
 25. Review (`reviews`)
 
+The application currently has 31 tables: these 25 core entities plus
+`sessions`, `order_reservations`, `payment_webhooks`,
+`payment_gateway_tokens`, `auth_action_tokens`, and `vendor_ledger_entries`.
 The brief's “30 entities” heading conflicts with its 25-item list and the ERD.
-No extra tables were inferred to fill the difference.
+The six additional tables support sessions, checkout inventory reservations,
+durable bKash callback processing, an encrypted shared token cache, account
+recovery/verification tokens, and vendor payout accounting; they are additive
+implementation tables, not inferred original ERD entities.
 
 ## Integrity covered in Phase 2
 
@@ -63,8 +69,9 @@ No extra tables were inferred to fill the difference.
 The ERD and brief do not fully specify these details; confirm them before the
 related business workflows are finalized:
 
-- Currency is not stored on monetary records. Existing frontend mock settings
-  use BDT, but whether the platform is single-currency needs confirmation.
+- Orders and payments enforce BDT. Checkout supports tax-exclusive percentage
+  tax on all products, configurable with `CHECKOUT_TAX_RATE_PERCENT`; it
+  defaults to 0 pending jurisdictional tax advice.
 - `tax_amount` is treated as total tax for one order line; `items_total` excludes
   tax, and `grand_total` is item total minus discount plus shipping plus tax.
   Tax jurisdiction/rate and rounding policy are unspecified.
@@ -78,8 +85,21 @@ related business workflows are finalized:
   order but does not define a per-customer use limit.
 - Coupon uses count once created, including if an order is later cancelled or
   refunded. Confirm whether cancellation should restore a coupon use.
-- No webhook event key/table is shown for payment callbacks; that belongs to
-  the later payment workflow. Phase 5 adds a per-customer checkout key.
+- Payment gateway callbacks and reconciliation state are recorded in the
+  additive `payment_webhooks` inbox table described below.
+- Coupon usage limits and expiry are serialized at checkout. The audit record
+  remains, but the usage slot is released after order cancellation or a fully
+  processed refund; partial refunds retain usage.
+- Vendor sale proceeds, refund reversals, and manually recorded payouts are
+  append-only BDT ledger entries in `vendor_ledger_entries`. New vendor
+  applications are pending and require a trusted vendor-role account to be
+  linked before activation.
+- Password reset and email verification token hashes/expiry are held in
+  `auth_action_tokens`; email delivery is not yet connected.
+- bKash access tokens are encrypted with AES-256-GCM and shared through
+  `payment_gateway_tokens`, keyed by a hash of the application key. The
+  `BKASH_TOKEN_ENCRYPTION_KEY` secret must be a 32-byte hexadecimal value
+  supplied consistently to API and worker processes.
 - The original ERD had no order-linked stock reservation rows. Phase 5 adds an
   order reservation allocation table and expiry field in migration 0004; a
   background expiry worker and later payment confirmation workflow remain open.
@@ -121,18 +141,25 @@ customer full name into the existing customer view.
 ## Phase 6 payment, refund, shipment, and review behavior
 
 - Payment attempts take the amount from the immutable order total and only one
-  pending/authorized attempt may exist at a time. The provider is a local mock;
-  only a signed server webhook can move an attempt to captured. Capture and
+  pending/authorized attempt may exist at a time. The bKash Tokenized Checkout
+  adapter creates BDT payment sessions. The browser callback is persisted in
+  `payment_webhooks`, then the worker queries bKash and only server-verified
+  status, amount, and currency can move a payment to captured. Capture and
   reservation confirmation/order confirmation run in one database transaction.
-- Webhook signatures use HMAC-SHA256 over `timestamp.raw-body`, a 5-minute
-  timestamp window, and `PAYMENT_WEBHOOK_SECRET` (minimum 32 characters). The
-  `eventId` is validated but not persisted because the approved ERD has no
-  webhook event table. Payment transaction ID plus locked state transitions
-  prevent duplicate capture effects, but there is no event audit/replay ledger.
+- bKash does not deliver a generic signed webhook event in this integration.
+  The event key is derived locally from provider payment ID and callback status;
+  the callback is untrusted notification data, not proof of payment. A unique
+  key and payment state locks protect duplicate processing.
 - A late capture without live complete order allocations is recorded and
-  creates a pending refund for administrator review. Refund provider calls use
-  the refund UUID as an idempotency key; a production gateway must support that
-  key before replacing the mock provider.
+  creates a pending refund for administrator review. Approved refunds and
+  payment reconciliation are processed by a persistent worker with exponential
+  backoff. Because bKash does not expose a refund idempotency key, ambiguous
+  refund attempts are reconciled against the provider refund history before
+  retries, which are delayed at least ten minutes.
+- Payment creation is not blindly retried after an ambiguous timeout because
+  the bKash create endpoint has no idempotency parameter. Sandbox HTTP-contract
+  tests do not establish live merchant credentials, gateway availability,
+  settlement, or production certification.
 - Shipments can allocate order-item quantities to a single seller. Existing
   database triggers prevent allocations beyond the purchased quantity. Vendors
   can mutate only their own seller shipments; customers only see their own
@@ -142,6 +169,6 @@ customer full name into the existing customer view.
   pending moderation until an administrator approves them. Product-level
   customer uniqueness and verified-purchase constraints are enforced by the
   existing database trigger/indexes.
-- There is no background payment reconciliation, refund retry worker, or
-  shipment carrier integration. The mock provider does not settle money or
-  contact a gateway. Do not treat this as production payment processing.
+- Shipment carrier integration remains out of scope. bKash still requires
+  merchant sandbox certification, live credentials, operational monitoring,
+  and a production deployment review before it can process real payments.

@@ -5,6 +5,14 @@ supplement the generated schema for PostgreSQL integrity constraints and trigger
 that the installed Drizzle Kit 0.23.2 cannot represent. That release also omits
 schema DSL check constraints from generated snapshots and SQL, so
 `0003_auth_and_checks.sql` adds those checks without rewriting earlier migrations.
+`0006_glorious_wrecking_crew.sql` likewise adds retry counters and webhook status
+checks that the generator omits from SQL.
+`0007_melodic_callisto.sql` adds the encrypted shared gateway-token cache used
+to prevent API and worker processes from independently requesting bKash tokens.
+`0008_mushy_justice.sql` adds account-action tokens, BDT order/payment currency,
+coupon usage restoration, and vendor ledger storage. Its reviewed SQL extends
+the immutable coupon-use trigger to permit only one-time release for cancelled
+or fully refunded orders and adds database checks omitted by Drizzle Kit.
 Keep SQL files, the journal, and snapshots together. Do not edit an applied
 migration; add a new numbered migration for later changes.
 

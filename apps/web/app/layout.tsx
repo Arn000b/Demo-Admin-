@@ -15,13 +15,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-<<<<<<< HEAD
-    <html lang="en" className={`light ${inter.variable}`}>
-      <body className="bg-slate-50 font-sans text-slate-900 antialiased">
-=======
     <html lang="en" suppressHydrationWarning>
-      <body className="font-sans">
->>>>>>> feature/my-new-code
+      <body className="bg-slate-50 font-sans text-slate-900 antialiased">
         <StoreProvider>
           <AuthProvider>
             <CustomerDemoProvider>

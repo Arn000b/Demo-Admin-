@@ -18,12 +18,13 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "dotenv": "^18.0.7",
     "drizzle-orm": "^0.32.0",
     "postgres": "^3.4.0"
   },
   "devDependencies": {
+    "@types/node": "^20.0.0",
     "drizzle-kit": "^0.23.0",
-    "typescript": "^5.5.0",
-    "@types/node": "^20.0.0"
+    "typescript": "^5.5.0"
   }
 }

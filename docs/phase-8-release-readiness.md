@@ -3,37 +3,42 @@
 ## Verification result
 
 - Workspace lint/type checks passed for API, web, database, shared types, and UI.
-- The configured API suite passed 34/34 tests. These are unit, route, and service-double tests; they do not connect to PostgreSQL.
+- The configured API suite passed 56 API/unit tests and 15 safety tests in the latest run. Gateway contract tests use mocked HTTP responses and do not connect to bKash.
 - The API production build emits a bundled `dist/index.js`. The actual `pnpm --filter @repo/api start` command launched it with non-production values and a blank `DATABASE_URL`; liveness returned HTTP 200 and readiness returned HTTP 503 without a database connection.
 - `/api/health` remains process liveness. `/api/ready` checks database connectivity through the shared pool, with a 3-second connection timeout and a 1.5-second transaction statement timeout. Missing or invalid configuration fails closed.
 - The Next.js production build passed after removing its build-time Google Fonts download and configuring the system sans-serif stack.
-- `drizzle-kit check` reported “Everything's fine.” This checks migration metadata and schema consistency; it does not apply migrations or verify PostgreSQL behavior.
-- No browser E2E runner or database integration-test suite is configured. No verified disposable PostgreSQL instance or connection was available, so no migrations were applied and database transaction/concurrency behavior remains unverified.
+- `drizzle-kit check` must be rerun for the current nine-entry history. Migrations 0000–0004 were previously applied and verified against a disposable Neon database. Payment, token-cache, auth-token, currency, and ledger migrations 0005–0008 have not been applied or tested against PostgreSQL.
+- A disposable-database integration suite is configured, but its nine-migration/31-table checks require migrations 0005–0008 to be applied to the approved isolated target before they can pass. No browser E2E runner or live bKash sandbox test has been run.
 
 ## Security review
 
 - Passwords are scrypt-hashed; session tokens are random, stored as SHA-256 hashes, and delivered in HttpOnly, `SameSite=Strict` cookies that are Secure in production. Logout revokes the server-side session.
 - API role and ownership checks derive user/customer/vendor identity from the authenticated session. Public registration creates customer accounts only; administrator and vendor provisioning remains trusted-operator work.
-- Payment webhooks validate HMAC-SHA256 signatures over the timestamp and raw body, use constant-time comparison, and enforce a timestamp window. The provider is mock-only, event IDs are not persisted, and state checks do not provide a durable event ledger.
+- Payment initiation uses the bKash Tokenized Checkout HTTP API in BDT. Return callbacks are written to a durable, unique-event inbox and verified with authenticated bKash Query Payment calls before applying payment state. A persistent worker retries callback processing, reconciles pending payment states, and schedules approved refunds. Gateway behavior has only contract-level mocked tests: sandbox merchant credentials and provider-side execution have not been verified.
 - Unexpected API errors return generic responses. The API logger was changed to log request method/path and error type rather than the error object, which may contain database details. Access to production logs should still be restricted.
-- Login and registration use an authenticated shared-limiter HTTP contract. The implementation hashes client keys, requires an explicit service URL/token, and fails closed with HTTP 503 when the service is missing or unavailable. Exact trusted proxy peer IPs must be configured before `X-Forwarded-For` is used; otherwise the socket peer address is used. The repository does not provide the limiter service.
+- Login and registration use an authenticated shared-limiter HTTP contract when configured. Client keys are HMAC-hashed; if the shared service is missing or unavailable, the API uses bounded per-process limits and exposes `authRateLimiter: "local-fallback"` on `/api/health` (`"unverified"` until the first auth request). This avoids an auth-wide 503 during a limiter outage but does not share counters across replicas. The repository does not provision the external service. Forwarded IP headers are honored only for configured immediate proxy peers, and ingress must overwrite both `X-Forwarded-For` and `X-Real-IP`.
 
 ## Deployment blockers and prerequisites
 
 1. **Database integration testing is outstanding.** Provide an explicitly designated, disposable PostgreSQL test instance and connection. Run the versioned migrations there, then add/run integration tests for checkout rollback/idempotency, concurrent stock reservation, expiration/cancellation, payment event transitions, refund approval contention, shipment allocation/delivery, and review constraints. Do not point this at production.
-2. **Shared limiter infrastructure is not provisioned.** Configure a service satisfying the documented atomic `/v1/consume` contract, provide `AUTH_RATE_LIMIT_URL` and `AUTH_RATE_LIMIT_TOKEN`, and test its shared behavior and availability before accepting auth traffic. Without it, login and registration fail closed with HTTP 503. Configure exact immediate proxy peer addresses in `TRUSTED_PROXY_IPS`; arbitrary forwarded headers are ignored.
-3. **Payments are mock-only.** The mock does not collect money. Webhook event IDs are not durably recorded; state guards limit duplicate effects, but durable replay/audit protection and provider reconciliation are absent. Do not enable real payment traffic.
+2. **Shared limiter infrastructure is not provisioned.** Configure a service satisfying the documented atomic `/v1/consume` contract, provide `AUTH_RATE_LIMIT_URL` and `AUTH_RATE_LIMIT_TOKEN`, and test its shared behavior and availability before accepting auth traffic. Until configured or during outages, login and registration use bounded per-process fallback limits, which are weaker across replicas. Set exact immediate proxy peer addresses in `TRUSTED_PROXY_IPS`; arbitrary forwarded headers are ignored.
+3. **bKash sandbox/production certification is pending.** Configure merchant sandbox credentials, `BKASH_TOKEN_ENCRYPTION_KEY`, and a publicly reachable HTTPS callback, apply migrations 0005–0008 to the verified non-production target, run a real sandbox create/complete/refund cycle, and deploy/supervise the Docker Compose API/worker. Do not enable live payment traffic until sandbox, reconciliation, and operational alerting are verified. The bKash return callback is not a signed webhook; authenticated provider queries are authoritative.
+4. **Lifecycle and tax production configuration remain incomplete.** Email delivery was deferred, so production reset/verification links cannot be delivered. Checkout tax defaults to 0 pending jurisdiction-specific policy; do not claim legal tax compliance.
+5. **Manual payout operations need reconciliation controls.** Vendor commission accrual and refund reversal are ledger-backed, but payout entries only record manually completed disbursements. Integrate banking or define dual approval/reconciliation before using at scale.
 
 ## Environment and secret checklist
 
 - [ ] Use a supported Node.js version (`>=20`) and pnpm (`>=9`); retain the pnpm workspace and lockfile workflow.
 - [ ] Set `DATABASE_URL` through the deployment secret manager. Verify the exact target, role grants, network access, TLS policy, and database name before running any migration.
 - [ ] Set `NODE_ENV=production`, `PORT`, and the exact browser origin in `FRONTEND_URL`.
-- [ ] Provision and monitor the shared atomic auth rate limiter. Set `AUTH_RATE_LIMIT_URL` to its HTTPS endpoint and `AUTH_RATE_LIMIT_TOKEN` through the secret manager; verify counters are shared across API replicas and the service contract/timeout behavior. Missing or unavailable limiter blocks login and registration with 503.
-- [ ] Set `TRUSTED_PROXY_IPS` to exact IP addresses of immediate ingress peers only. Ensure ingress overwrites `X-Forwarded-For` with one client IP. Leave empty when requests reach the API directly; forwarded headers are then ignored. Dynamic/CIDR proxy ranges require a separate reviewed trust configuration.
+- [ ] Provision and monitor the shared atomic auth rate limiter. Set `AUTH_RATE_LIMIT_URL` to its HTTPS endpoint and `AUTH_RATE_LIMIT_TOKEN` through the secret manager; verify counters are shared across API replicas and the service contract/timeout behavior. Alert if `/api/health` reports `authRateLimiter: "local-fallback"`.
+- [ ] Set `TRUSTED_PROXY_IPS` to exact IP addresses of immediate ingress peers only. Ensure ingress overwrites both `X-Forwarded-For` and `X-Real-IP` with the validated client IP. Leave empty when requests reach the API directly; forwarded headers are then ignored. Dynamic/CIDR proxy ranges require a separate reviewed trust configuration.
 - [ ] Set `NEXT_PUBLIC_API_URL` to the public API base URL at web build time. Confirm the API CORS origin matches `FRONTEND_URL` and the cookie’s `SameSite=Strict` deployment topology.
-- [ ] Store `PAYMENT_WEBHOOK_SECRET` in a secret manager (at least 32 characters) only for a controlled signed-webhook environment. Missing/invalid secrets reject webhook requests; the payment provider remains a development mock.
-- [ ] Do not copy placeholder values from `.env.example` into a live deployment. Do not expose database or webhook secrets through `NEXT_PUBLIC_*` variables, source, logs, or API responses.
+- [ ] Store `BKASH_USERNAME`, `BKASH_PASSWORD`, `BKASH_APP_KEY`, and `BKASH_APP_SECRET` in a secret manager. Configure `BKASH_API_BASE_URL` for the intended environment and a publicly reachable HTTPS `BKASH_CALLBACK_URL`; never place credentials in browser-visible variables.
+- [ ] Obtain tax advice and set `CHECKOUT_TAX_RATE_PERCENT` to the approved tax-exclusive rate before accepting orders subject to tax.
+- [ ] Implement and test a transactional email provider before relying on password reset or email verification in production.
+- [ ] Set the same randomly generated 32-byte `BKASH_TOKEN_ENCRYPTION_KEY` (64 hex characters) on every API and payment-worker process.
+- [ ] Do not copy placeholder values from `.env.example` into a live deployment. Do not expose database or gateway secrets through `NEXT_PUBLIC_*` variables, source, logs, or API responses.
 - [ ] Provision administrator/vendor identities through the documented trusted process. Public registration grants customer role only.
 
 ## Migration, health, observability, and recovery checklist
